@@ -3196,6 +3196,8 @@ subroutine DUExternal(lhepoverlap)
          call DUExternalEstatField
       else if (txuext(ipt) == 'hom_charged_walls') then
          call DUExternalHomChargedWall
+      else if (txuext(ipt) == 'hom_charged_single_wall') then
+         call DUExternalHomChargedSingleWall
       else if (txuext(ipt) == 'i_soft_sphere') then
          call DUExternalISoftSphere
       else if (txuext(ipt) == 'Gunnar_soft_sphere') then
@@ -3531,6 +3533,49 @@ subroutine DUExternalHomChargedWall
     end do
 
 end subroutine DUExternalHomChargedWall
+
+!........................................................................
+
+! Added by Emile de Bruyn Nov. 2018
+! Exactly the same as the subroutine called by hom_charged_walls, but only in one direction.
+
+subroutine DUExternalHomChargedSingleWall
+   real(8) :: scd, a, a2, b, z, zsb, zsb2, longrangecontr
+   integer(4) :: i
+   scd = surfchargeden/(ech*1.d20)
+   a = boxlen2(1)
+   a2 = a**2
+   b = boxlen2(3)
+
+   do ia=ianpn(ip),ianpn(ip)+napt(ipt)-1
+      ialoc=ialoc+1
+      iat = iatan(ia)
+
+      z = rtm(3,ialoc)    ! trial configuration
+      do i = -1,1,2
+         zsb = abs(i*b-z)
+         zsb2 = zsb**2
+         du%external = du%external + EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
+         Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
+      end do
+      if (llongrangecontr) then
+         du%external = du%external + EpsiFourPi*zat(iat)*longrangecontr(boxlen2(1), z, scd, mninchden, zdist, chden)
+      endif
+
+      z = r(3,ia)         ! old configuration
+      do i = -1,1,2
+         zsb = abs(i*b-z)
+         zsb2 = zsb**2
+         du%external = du%external - EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
+         Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
+      end do
+      if (llongrangecontr) then
+         du%external = du%external - EpsiFourPi*zat(iat)*longrangecontr(boxlen2(1), z, scd, mninchden, zdist, chden)
+       endif
+
+    end do
+
+end subroutine DUExternalHomChargedSingleWall
 
 !........................................................................
 
