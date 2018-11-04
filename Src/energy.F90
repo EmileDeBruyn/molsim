@@ -5973,6 +5973,37 @@ end subroutine UExternalHomChargedWall
 
 !........................................................................
 
+! Added by Emile de Bruyn Nov. 2018
+! Exactly the same as the subroutine called by hom_charged_walls, but only in one direction.
+
+subroutine DUExternalHomChargedSingleWall
+   real(8) :: scd, a, a2, b, z, zsb, zsb2, longrangecontr
+   integer(4) :: i
+   scd = surfchargeden/(ech*1.d20)
+   a = boxlen2(1)
+   a2 = a**2
+   b = boxlen2(3)
+
+   do ia=ialow, iaupp
+      iat = iatan(ia)
+      z = r(3,ia)
+
+      i = -1
+      zsb = abs(i*b-z)
+      zsb2 = zsb**2
+      du%external = du%external + EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
+      Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
+
+      if (llongrangecontr) then
+         du%external = du%external + EpsiFourPi*zat(iat)*longrangecontr(boxlen2(1), z, scd, mninchden, zdist, chden)
+      endif
+
+   end do
+
+end subroutine DUExternalHomChargedSingleWall
+
+!........................................................................
+
 subroutine UExternalISoftSphere        ! external, soft, and spherical wall
    do ia = ialow, iaupp
       r1 = sqrt(r(1,ia)**2+r(2,ia)**2+r(3,ia)**2)

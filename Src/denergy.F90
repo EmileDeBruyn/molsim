@@ -3571,9 +3571,9 @@ subroutine DUExternalHomChargedSingleWall
 
       if (llongrangecontr) then
          du%external = du%external - EpsiFourPi*zat(iat)*longrangecontr(boxlen2(1), z, scd, mninchden, zdist, chden)
-       endif
+      endif
 
-    end do
+   end do
 
 end subroutine DUExternalHomChargedSingleWall
 
