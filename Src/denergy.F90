@@ -3552,23 +3552,23 @@ subroutine DUExternalHomChargedSingleWall
       iat = iatan(ia)
 
       z = rtm(3,ialoc)    ! trial configuration
-      do i = -1,1,2
-         zsb = abs(i*b-z)
-         zsb2 = zsb**2
-         du%external = du%external + EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
-         Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
-      end do
+      i = -1
+      zsb = abs(i*b-z)
+      zsb2 = zsb**2
+      du%external = du%external + EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
+      Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
+
       if (llongrangecontr) then
          du%external = du%external + EpsiFourPi*zat(iat)*longrangecontr(boxlen2(1), z, scd, mninchden, zdist, chden)
       endif
 
       z = r(3,ia)         ! old configuration
-      do i = -1,1,2
-         zsb = abs(i*b-z)
-         zsb2 = zsb**2
-         du%external = du%external - EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
-         Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
-      end do
+      i = -1
+      zsb = abs(i*b-z)
+      zsb2 = zsb**2
+      du%external = du%external - EpsiFourPi*zat(iat)*scd*(8.d0*a*log( (sqrt(Two*a2+zsb2)+a)/(sqrt(a2+zsb2)))- &
+      Two*zsb*(asin( (a2**2-zsb2**2-Two*a2*zsb2)/(a2+zsb2)**2 )+Half*Pi))
+
       if (llongrangecontr) then
          du%external = du%external - EpsiFourPi*zat(iat)*longrangecontr(boxlen2(1), z, scd, mninchden, zdist, chden)
        endif
