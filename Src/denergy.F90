@@ -3196,7 +3196,7 @@ subroutine DUExternal(lhepoverlap)
          call DUExternalEstatField
       else if (txuext(ipt) == 'hom_charged_walls') then
          call DUExternalHomChargedWall
-      else if (txuext(ipt) == 'hom_charged_single_wall') then
+      else if (txuext(ipt) == 'hom_charged_swall') then
          call DUExternalHomChargedSingleWall
       else if (txuext(ipt) == 'i_soft_sphere') then
          call DUExternalISoftSphere

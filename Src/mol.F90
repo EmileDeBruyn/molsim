@@ -1385,7 +1385,7 @@ module MolModule
 !! * '`lj_wall_desorb`': truncated LJ + ramp wall at z = -wall_z-ext (Niklas)
 !! * '`estat_field_z`': homogeneous electrical field in z-direction
 !! * '`hom_charged_walls`': interaction with two charged surfaces opposite each other
-!! * '`hom_charged_single_wall`': interaction with a single charged surface
+!! * '`hom_charged_swall`': interaction with a single charged surface
 !! * '`i_soft_sphere`': external, soft, and spherical wall
 !! * '`Gunnar_soft_sphere`': external, soft, and spherical wall (Gunnar)
 !! * '`out_hard_ellipsoid`': hard ellipsoidal wall

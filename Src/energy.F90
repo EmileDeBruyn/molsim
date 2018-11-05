@@ -5638,7 +5638,7 @@ subroutine UExternal
          call UExternalEstatField
       else if (txuext(ipt) == 'hom_charged_walls') then
          call UExternalHomChargedWall
-      else if (txuext(ipt) == 'hom_charged_single_wall') then
+      else if (txuext(ipt) == 'hom_charged_swall') then
          call UExternalHomChargedSingleWall
       else if (txuext(ipt) == 'i_soft_sphere') then
          call UExternalISoftSphere

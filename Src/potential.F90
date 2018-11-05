@@ -4083,7 +4083,7 @@ subroutine IOPotExternal(iStage)
                write(uout,'(a)') 'homgeneously charged hard walls at z = +-boxlen(3)/2'
                write(uout,'(a,t35,3g10.3)') 'surface charge density (C/m**2) = ', surfchargeden
                write(uout,'(a,t35,3g10.3)') 'long-range correction           = ', llongrangecontr
-            else if (txuext(ipt) == 'hom_charged_single_wall') then
+            else if (txuext(ipt) == 'hom_charged_swall') then
                write(uout,'(a)') 'homgeneously charged hard single wall at z = -boxlen(3)/2'
                write(uout,'(a,t35,3g10.3)') 'surface charge density (C/m**2) = ', surfchargeden
                write(uout,'(a,t35,3g10.3)') 'long-range correction           = ', llongrangecontr
