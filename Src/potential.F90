@@ -4087,6 +4087,9 @@ subroutine IOPotExternal(iStage)
                write(uout,'(a)') 'homgeneously charged hard single wall at z = -boxlen(3)/2'
                write(uout,'(a,t35,3g10.3)') 'surface charge density (C/m**2) = ', surfchargeden
                write(uout,'(a,t35,3g10.3)') 'long-range correction           = ', llongrangecontr
+            else if (txuext(ipt) == 'simple_coul_wall') then
+               write(uout,'(a)') 'homgeneously charged hard simple coloumb hard wall at z = -boxlen(3)/2'
+               write(uout,'(a,t35,3g10.3)') 'surface charge density (C/m**2) = ', surfchargeden
             else if (txuext(ipt) == 'i_soft_sphere') then
                write(uout,'(a)') 'external potential u(r) = 0                            , r < ruext(1,ipt)'
                write(uout,'(a)') 'external potential u(r) = auext*(r-ruext(1,ipt))**nuext, r > ruext(1,ipt)'

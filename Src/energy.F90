@@ -5640,6 +5640,8 @@ subroutine UExternal
          call UExternalHomChargedWall
       else if (txuext(ipt) == 'hom_charged_swall') then
          call UExternalHomChargedSingleWall
+      else if (txuext(ipt) == 'simple_coul_wall') then
+         call UExternalSimpleCoulombWall
       else if (txuext(ipt) == 'i_soft_sphere') then
          call UExternalISoftSphere
       else if (txuext(ipt) == 'Gunnar_soft_sphere') then
@@ -6001,6 +6003,29 @@ subroutine UExternalHomChargedSingleWall
    end do
 
 end subroutine UExternalHomChargedSingleWall
+
+!........................................................................
+
+! Added by Emile de Bruyn Nov. 2018
+! Simple Coulomb potential with no screening at a single hard wall at -z.
+! vdW attractive interaction with wall.
+! See R. Messina, Macromolecules 2004, 37, 621–629. Equations 1, 3, 5 and 8.
+
+subroutine UExternalSimpleCoulombWall
+   real(8) :: scd, b, z, zsb, wall_hs, wall_z_ext
+   scd = surfchargeden/(ech*1.d20)
+   b = boxlen2(3)
+
+   do ia = ialow, iaupp
+      iat = iatan(ia)
+      wall_hs = wall_z_ext - radat(iat)            ! hs interaction at z = wall_hs
+      if (abs(r(3,ia)) > wall_hs) call Stop(txroutine, 'hs overalp with z-wall', uout)
+
+      z = r(3,ia)
+      zsb = abs(z+b)
+      du%external = du%external + Two*Pi*EpsiFourPi*zat(iat)*scd*zsb
+   end do
+end subroutine UExternalSimpleCoulombWall
 
 !........................................................................
 
