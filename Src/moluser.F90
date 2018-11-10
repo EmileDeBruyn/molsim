@@ -631,7 +631,7 @@ end subroutine SetCubic2D2Surf
 !************************************************************************
 !> \page moluser moluser.F90
 !! **Set2DOffset1Surf**
-!! *generate a cubic configuration with particles at z = -(4 boxlenz/5)*
+!! *generate a cubic configuration with particles at z = -(boxlenz/2 + boxlenz/5)*
 !************************************************************************
 
 subroutine Set2DOffset1Surf(ipt)
@@ -663,8 +663,8 @@ subroutine Set2DOffset1Surf(ipt)
             ip = nset - 1 + ipnpt(ipt)
             ro(1,ip) = xoffset + ix*dx
             ro(2,ip) = yoffset + iy*dy
-            ro(3,ip) = (2*isurf-3)*(4*boxlen(3)/5)
-            call SetAtomPos(ip, ip, .false.)
+            ro(3,ip) = -boxlen2(3) + boxlen2(3)/5
+            call SetAtomPos(ip, ip, .true.)
          end do
       end do
    end do
