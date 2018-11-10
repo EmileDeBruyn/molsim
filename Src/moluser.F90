@@ -424,6 +424,8 @@ subroutine SetConfigurationUser(ipt, lsetconf)
       call SetCubic2D1Surf(ipt)
    else if (txsetconf(ipt) == 'cubic2d2surf') then
       call SetCubic2D2Surf(ipt)
+   else if (txsetconf(ipt) == '2doffset1surf') then
+      call Set2DOffset1Surf(ipt)
    else if (txsetconf(ipt) == 'random_trans') then
       call SetChainRandomTrans() !ipt is not needed
    else if (txsetconf(ipt) == 'capsid') then
@@ -625,6 +627,49 @@ subroutine SetCubic2D2Surf(ipt)
    end do
 
 end subroutine SetCubic2D2Surf
+
+!************************************************************************
+!> \page moluser moluser.F90
+!! **Set2DOffset1Surf**
+!! *generate a cubic configuration with particles at z = -(4 boxlenz/5)*
+!************************************************************************
+
+subroutine Set2DOffset1Surf(ipt)
+
+   use CoordinateModule
+   implicit none
+
+   integer(4), intent(in) :: ipt           ! particle type
+
+   character(40), parameter :: txroutine ='Set2DOffset1Surf'
+   integer(4) :: nset, nsurf, m, ix, iy, isurf, ip
+   real(8) :: xoffset, yoffset, dx, dy
+
+   nsurf = 1                               ! number of surfaces (1 or 2)
+   m = sqrt(real(nppt(ipt)/nsurf))
+   if (nsurf*m**2 /= nppt(ipt)) call Stop(txroutine, 'nsurf*m**2 /= nppt(ipt)', uout)
+
+   dx = boxlen(1)/m
+   dy = boxlen(2)/m
+
+   xoffset = -boxlen2(1) + Half*dx
+   yoffset = -boxlen2(2) + Half*dx
+
+   nset = 0
+   do ix = 0, m-1
+      do iy = 0, m-1
+         do isurf = 1, nsurf
+            nset = nset + 1
+            ip = nset - 1 + ipnpt(ipt)
+            ro(1,ip) = xoffset + ix*dx
+            ro(2,ip) = yoffset + iy*dy
+            ro(3,ip) = (2*isurf-3)*(4*boxlen(3)/5)
+            call SetAtomPos(ip, ip, .false.)
+         end do
+      end do
+   end do
+
+end subroutine Set2DOffset1Surf
 
 !************************************************************************
 !> \page moluser moluser.F90
