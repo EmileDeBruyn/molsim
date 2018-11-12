@@ -1564,7 +1564,6 @@ subroutine DUWeakChargeEwald
 ! ... calculate
    if (txewaldrec == 'std') then
        call DUWeakChargeEwaldRecStd
-       if (lewald2dlc) call Stop(txroutine,'invalid choice of lewald2dlc .and. lweakcharge',uout)
    else
       call Stop(txroutine,'invalid choice of txewaldrec .and. lweakcharge',uout)
    end if
@@ -1675,22 +1674,39 @@ subroutine DUWeakChargeEwaldSurf
 
    ! ... if lewald2dlc shall be allowed for titrating systems (weak charges)
    ! ... this needs to be differentiated here. Please see DUTwoBodyEwaldSurf
+   ! Tried to implement this - Emile de Bruyn 2018
 
-   fac = TwoPi/(Three*vol)
-   sumqrx = sum(az(1:na)*r(1,1:na))
-   sumqry = sum(az(1:na)*r(2,1:na))
-   sumqrz = sum(az(1:na)*r(3,1:na))
-   sumqrxtm = sumqrx
-   sumqrytm = sumqry
-   sumqrztm = sumqrz
-   do ialoc = 1, natm
-      ia = ianatm(ialoc)
-      sumqrxtm = sumqrxtm + aztm(ialoc)*rtm(1,ialoc) - az(ia)*r(1,ia)
-      sumqrytm = sumqrytm + aztm(ialoc)*rtm(2,ialoc) - az(ia)*r(2,ia)
-      sumqrztm = sumqrztm + aztm(ialoc)*rtm(3,ialoc) - az(ia)*r(3,ia)
-   end do
-   term = fac*((sumqrxtm**2+sumqrytm**2+sumqrztm**2) - (sumqrx**2+sumqry**2+sumqrz**2))
-   du%rec = du%rec + term
+   if (.not.lewald2dlc) then
+
+      fac = TwoPi/(Three*vol)
+      sumqrx = sum(az(1:na)*r(1,1:na))
+      sumqry = sum(az(1:na)*r(2,1:na))
+      sumqrz = sum(az(1:na)*r(3,1:na))
+      sumqrxtm = sumqrx
+      sumqrytm = sumqry
+      sumqrztm = sumqrz
+      do ialoc = 1, natm
+         ia = ianatm(ialoc)
+         sumqrxtm = sumqrxtm + aztm(ialoc)*rtm(1,ialoc) - az(ia)*r(1,ia)
+         sumqrytm = sumqrytm + aztm(ialoc)*rtm(2,ialoc) - az(ia)*r(2,ia)
+         sumqrztm = sumqrztm + aztm(ialoc)*rtm(3,ialoc) - az(ia)*r(3,ia)
+      end do
+      term = fac*((sumqrxtm**2+sumqrytm**2+sumqrztm**2) - (sumqrx**2+sumqry**2+sumqrz**2))
+      du%rec = du%rec + term
+
+   else
+
+      fac = TwoPi/vol
+      sumqrz = sum(az(1:na)*r(3,1:na))
+      sumqrztm = sumqrz
+      do ialoc = 1, natm
+         ia = ianatm(ialoc)
+         sumqrztm = sumqrztm + aztm(ialoc)*rtm(3,ialoc)-az(ia)*r(3,ia)
+      end do
+      term = fac*(sumqrztm**2 - sumqrz**2)
+      du%rec = du%rec + term
+
+   end if
 
 end subroutine DUWeakChargeEwaldSurf
 
