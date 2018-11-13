@@ -554,7 +554,7 @@ subroutine SetCubic2D1Surf(ipt)
 
    character(40), parameter :: txroutine ='SetCubic2D1Surf'
    integer(4) :: nset, nsurf, m, ix, iy, isurf, ip
-   real(8) :: xoffset, yoffset, dx, dy
+   real(8) :: xoffset, yoffset, dx, dy, zpos
 
    nsurf = 1                               ! number of surfaces (1 or 2)
    m = sqrt(real(nppt(ipt)/nsurf))
@@ -566,17 +566,21 @@ subroutine SetCubic2D1Surf(ipt)
    xoffset = -boxlen2(1) + Half*dx
    yoffset = -boxlen2(2) + Half*dx
 
+   if ( r2dzpos(ipt) /= 0.0E+00 ) then
+      zpos = r2dzpos(ipt)
+   else
+      zpos = -(boxlen2(3) + Two)
+   end if
+   
    nset = 0
    do ix = 0, m-1
       do iy = 0, m-1
-         do isurf = 1, nsurf
-            nset = nset + 1
-            ip = nset - 1 + ipnpt(ipt)
-            ro(1,ip) = xoffset + ix*dx
-            ro(2,ip) = yoffset + iy*dy
-            ro(3,ip) = (2*isurf-3)*(boxlen2(3) + Two)
-            call SetAtomPos(ip, ip, .false.)
-         end do
+         nset = nset + 1
+         ip = nset - 1 + ipnpt(ipt)
+         ro(1,ip) = xoffset + ix*dx
+         ro(2,ip) = yoffset + iy*dy
+         ro(3,ip) = zpos
+         call SetAtomPos(ip, ip, .false.)
       end do
    end do
 

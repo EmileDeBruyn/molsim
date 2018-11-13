@@ -168,6 +168,11 @@ module CoordinateModule
 !! * `0`: Nothing. The normal option.
 !! * `1`: Write crosslink data.
    integer(4)    :: itestcoordinate           ! =1, call of TestMakeCrossLink
+!> \page r2dzpos
+!! `integer`
+!! **default:** `-boxlen2(3) + 2`
+!! * Position of 1d Surface used in \ref cubic2d1surf for particle type ipt.
+   real(8), allocatable      :: r2dzpos(:)		! Position of 1d Surface used in cubic2d1surf
 end module CoordinateModule
 
 !************************************************************************
@@ -440,11 +445,12 @@ subroutine SetConfiguration
                                   iptnode, ictstrand,                                                &
                                   rnwt, txoriginnwt, shiftnwt,                                       &
                                   radlimit, ntrydef,                                                 &
-                                  itestcoordinate
+                                  itestcoordinate, r2dzpos
 
    if (.not.allocated(txsetconf)) then
       allocate(txsetconf(npt), nucell(3,npt), rclow(3,npt), rcupp(3, npt),       &
-      roshift(3,npt), radatset(nat), lranori(npt), bondscl(nct), anglemin(nct))
+      roshift(3,npt), radatset(nat), lranori(npt), bondscl(nct), anglemin(nct),  &
+	  r2dzpos(npt))
       txsetconf   = ""
       nucell      = 0
       rclow       = 0.0E+00
@@ -454,6 +460,7 @@ subroutine SetConfiguration
       lranori     = .false.
       bondscl     = 0.0E+00
       anglemin    = 0.0E+00
+	  r2dzpos     = 0.0E+00
    end if
    if (.not.allocated(radatset)) then
       allocate(radatset(nat))
