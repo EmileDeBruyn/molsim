@@ -7434,7 +7434,7 @@ subroutine Z_DF_Slit(iStage)
       iptz1 = 1
       iptz2 = 2
 
-      if (txbc /= 'xy') call Stop (txroutine,'txbc /= ''xy''',uout)
+      if ((txbc /= 'xy') .and. (lewald2dlc /= .true.)) call Stop (txroutine,'txbc /= ''xy'' and ewald2dlc = .false.',uout)
       if (maxval(vtype%nbin) > mnbin_df) call Stop(txroutine, 'vtype%nbin > mnbin_df', uout)
 
    case (iWriteInput)
