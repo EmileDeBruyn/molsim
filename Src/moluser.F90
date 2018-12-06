@@ -14,15 +14,15 @@ subroutine PotentialUser(ipt, jpt, ibuf, lsetatat2, lsetconf)
    integer(4), intent(inout) :: ibuf
    logical,    intent(inout) :: lsetatat2(*)
    logical,    intent(out)   :: lsetconf   ! =.true. if match and generation of tables
-                                           ! =.false. otherwise
+   ! =.false. otherwise
    integer(4) :: iptjpt
 
    external SodiumChloride
-!   external SquareWell
+   !   external SquareWell
    external EwaldSquareWell
    external ElstatScreen
 
-! ... see if user provided routine exist for txpot(iptjpt)
+   ! ... see if user provided routine exist for txpot(iptjpt)
 
    iptjpt = iptpt(ipt,jpt)
    lsetconf =.true.
@@ -96,7 +96,7 @@ subroutine SodiumChloride(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
       do iat = iatpt(ipt), iatpt(ipt)+natpt(ipt)-1
          do jat = iatpt(jpt), iatpt(jpt)+natpt(jpt)-1
             iatjat = iatat(iat,jat)
-!           r2umin(iatjat) = r2atat(iatjat)-1.0d-4
+            !           r2umin(iatjat) = r2atat(iatjat)-1.0d-4
             r2umin(iatjat) = r2uminin
             r2umax(iatjat) = (rumaxfac*(rcut+racom(ipt)+racom(jpt)))**2
          end do
@@ -114,12 +114,12 @@ subroutine SodiumChloride(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
       term5 = qq*r1i
       u0 = (term1+term2)*term3         +  term4 + term5
       u1 = (term1*( a2)*r1i+a3)*term3  + (term1+term2)*(-a4)*term3 &
-         +  term4*(-a6)*r1i            +  term5*(-One)*r1i
+            +  term4*(-a6)*r1i            +  term5*(-One)*r1i
       u2 = (term1*( a2)*( a2-1.)*r1i**2)*term3  &
-         + Two*(term1*( a2)*r1i+a3)*(-a4)*term3 &
-         + (term1+term2)*(-a4)*(-a4)*term3      &
-         +  term4*(-a6)*(-a6-1.)*r1i**2         &
-         +  term5*(-1.)*(-2.)*r1i**2
+            + Two*(term1*( a2)*r1i+a3)*(-a4)*term3 &
+            + (term1+term2)*(-a4)*(-a4)*term3      &
+            +  term4*(-a6)*(-a6-1.)*r1i**2         &
+            +  term5*(-1.)*(-2.)*r1i**2
 
    else
 
@@ -152,8 +152,8 @@ subroutine EwaldSquareWell(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
 
    if (str(1:4) == 'init') then
 
-     call EwaldRealSpacePot(str, ipt, jpt, iat, jat, r1, u0x, u1x, u2x)
-     call SquareWell(str, ipt, jpt, iat, jat, r1, u0x, u1x, u2x)
+      call EwaldRealSpacePot(str, ipt, jpt, iat, jat, r1, u0x, u1x, u2x)
+      call SquareWell(str, ipt, jpt, iat, jat, r1, u0x, u1x, u2x)
 
    else if (str(1:4) == 'calc') then
 
@@ -177,147 +177,147 @@ subroutine EwaldSquareWell(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-!     real ewald term: 1/r -> (1-erf(r*ualpha))/r      with ualpha = ualphared/rcut
+   !     real ewald term: 1/r -> (1-erf(r*ualpha))/r      with ualpha = ualphared/rcut
 
-subroutine EwaldRealSpacePot(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
+   subroutine EwaldRealSpacePot(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
 
-   use PotentialModule
-   implicit none
+      use PotentialModule
+      implicit none
 
-   character(*), intent(in)    :: str
-   integer(4),   intent(in)    :: ipt, jpt
-   integer(4),   intent(inout) :: iat, jat
-   real(8)   ,   intent(in)    :: r1
-   real(8)   ,   intent(out)   :: u0, u1, u2
+      character(*), intent(in)    :: str
+      integer(4),   intent(in)    :: ipt, jpt
+      integer(4),   intent(inout) :: iat, jat
+      real(8)   ,   intent(in)    :: r1
+      real(8)   ,   intent(out)   :: u0, u1, u2
 
-   character(40), parameter :: txroutine ='EwaldRealSpacePot'
-   real(8), parameter :: fac = 1.128379167d0
-   integer(4) :: iatjat, m
-   real(8) :: c0fac, c1fac, c2fac
-   real(8) :: r1i, rni, w0, w1, w2, term
+      character(40), parameter :: txroutine ='EwaldRealSpacePot'
+      real(8), parameter :: fac = 1.128379167d0
+      integer(4) :: iatjat, m
+      real(8) :: c0fac, c1fac, c2fac
+      real(8) :: r1i, rni, w0, w1, w2, term
 
-   if (str(1:4) == 'init') then
+      if (str(1:4) == 'init') then
 
-      do iat = iatpt(ipt), iatpt(ipt)+natpt(ipt)-1
-         do jat = iatpt(jpt), iatpt(jpt)+natpt(jpt)-1
-            iatjat = iatat(iat,jat)
-            r2umin(iatjat) = r2atat(iatjat)-1.0d-4
-!           r2umin(iatjat) = r2uminin
-            r2umax(iatjat) = (rumaxfac*(rcut+racom(ipt)+racom(jpt)))**2
+         do iat = iatpt(ipt), iatpt(ipt)+natpt(ipt)-1
+            do jat = iatpt(jpt), iatpt(jpt)+natpt(jpt)-1
+               iatjat = iatat(iat,jat)
+               r2umin(iatjat) = r2atat(iatjat)-1.0d-4
+               !           r2umin(iatjat) = r2uminin
+               r2umax(iatjat) = (rumaxfac*(rcut+racom(ipt)+racom(jpt)))**2
 
-! ... check existence of 1/r-term
+               ! ... check existence of 1/r-term
 
-            if (ipot(1,iatjat) /= 1) call Stop(txroutine, 'no 1/r-term', uout)
+               if (ipot(1,iatjat) /= 1) call Stop(txroutine, 'no 1/r-term', uout)
 
+            end do
          end do
-      end do
 
-   else if (str(1:4) == 'calc') then
+      else if (str(1:4) == 'calc') then
 
-      iatjat = iatat(iat,jat)
+         iatjat = iatat(iat,jat)
 
-      r1i = One/r1
-      rni = r1i
-      w0 = Zero
-      w1 = Zero
-      w2 = Zero
-      do m = 2, ipotm
-         rni  = rni * r1i
-         term = ucoffx(m,iatjat) * rni
-         w0   = w0 + term
-         w1   = w1 + (-m) * term
-         w2   = w2 + (-m) * (-m-1) * term
-      end do
-      u0 = w0
-      u1 = w1 * r1i
-      u2 = w2 * r1i * r1i
+         r1i = One/r1
+         rni = r1i
+         w0 = Zero
+         w1 = Zero
+         w2 = Zero
+         do m = 2, ipotm
+            rni  = rni * r1i
+            term = ucoffx(m,iatjat) * rni
+            w0   = w0 + term
+            w1   = w1 + (-m) * term
+            w2   = w2 + (-m) * (-m-1) * term
+         end do
+         u0 = w0
+         u1 = w1 * r1i
+         u2 = w2 * r1i * r1i
 
-      c0fac = One
-      c1fac = One
-      c2fac = One
-      if (lewald .and. lcharge) then
-         call CalcEwaldUfac(r1, ualpha, c0fac, c1fac, c2fac)
-      else
          c0fac = One
          c1fac = One
          c2fac = One
+         if (lewald .and. lcharge) then
+            call CalcEwaldUfac(r1, ualpha, c0fac, c1fac, c2fac)
+         else
+            c0fac = One
+            c1fac = One
+            c2fac = One
+         end if
+         u0 = u0 + ucoffx(1,iatjat)*c0fac*r1i
+         u1 = u1 - ucoffx(1,iatjat)*c1fac*r1i**2
+         u2 = u2 + ucoffx(1,iatjat)*c2fac*Two*r1i**3
+
+      else
+
+         call Stop(txroutine, 'str value unsupported', uout)
+
       end if
-      u0 = u0 + ucoffx(1,iatjat)*c0fac*r1i
-      u1 = u1 - ucoffx(1,iatjat)*c1fac*r1i**2
-      u2 = u2 + ucoffx(1,iatjat)*c2fac*Two*r1i**3
 
-   else
+   end subroutine EwaldRealSpacePot
 
-      call Stop(txroutine, 'str value unsupported', uout)
+   !........................................................................
 
-   end if
+   !     square-well term: u(r) =  epsilon_well*(0.5 + (1/pi)*atan(alapha_well*(r-r_well))
 
-end subroutine EwaldRealSpacePot
+   subroutine SquareWell(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
 
-!........................................................................
+      use PotentialModule
+      implicit none
 
-!     square-well term: u(r) =  epsilon_well*(0.5 + (1/pi)*atan(alapha_well*(r-r_well))
+      character(*), intent(in)    :: str
+      integer(4),   intent(in)    :: ipt, jpt
+      integer(4),   intent(inout) :: iat, jat
+      real(8)   ,   intent(in)    :: r1
+      real(8)   ,   intent(out)   :: u0, u1, u2
 
-subroutine SquareWell(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
+      character(40), parameter :: txroutine ='SquareWell'
+      real(8), save :: epsilon_well
+      real(8), save :: r_well
+      real(8), save :: alpha_well
+      integer(4) :: iatjat
+      real(8)    :: x
 
-   use PotentialModule
-   implicit none
+      if (str(1:4) == 'init') then
 
-   character(*), intent(in)    :: str
-   integer(4),   intent(in)    :: ipt, jpt
-   integer(4),   intent(inout) :: iat, jat
-   real(8)   ,   intent(in)    :: r1
-   real(8)   ,   intent(out)   :: u0, u1, u2
+         epsilon_well = -One     ! depth of the square well (energy)
+         r_well       = 3.0d0      ! end of the square well   (length)
+         alpha_well   = 1.0d-3     ! steepness of the rise (lower alpha => steeper rise)
 
-   character(40), parameter :: txroutine ='SquareWell'
-   real(8), save :: epsilon_well
-   real(8), save :: r_well
-   real(8), save :: alpha_well
-   integer(4) :: iatjat
-   real(8)    :: x
+         write(uout,*) 'square-well potential'
+         write(uout,*) '---------------------'
+         write(uout,'(a,t35,3g15.5)') 'epsilon_well                   = ', epsilon_well
+         write(uout,'(a,t35,3g15.5)') 'r_well                         = ', r_well
+         write(uout,'(a,t35,3g15.5)') 'alpha_well                     = ', alpha_well
+         write(uout,*)
 
-   if (str(1:4) == 'init') then
+         do iat = iatpt(ipt), iatpt(ipt)+natpt(ipt)-1
+            do jat = iatpt(jpt), iatpt(jpt)+natpt(jpt)-1
+               iatjat = iatat(iat,jat)
+               r2umin(iatjat) = r2atat(iatjat)-1.0d-4
+               !           r2umin(iatjat) = r2uminin
+               r2umax(iatjat) = (rumaxfac*(rcut+racom(ipt)+racom(jpt)))**2
+            end do
+         end do
 
-      epsilon_well = -One     ! depth of the square well (energy)
-      r_well       = 3.0d0      ! end of the square well   (length)
-      alpha_well   = 1.0d-3     ! steepness of the rise (lower alpha => steeper rise)
+      else if (str(1:4) == 'calc') then
 
-       write(uout,*) 'square-well potential'
-       write(uout,*) '---------------------'
-       write(uout,'(a,t35,3g15.5)') 'epsilon_well                   = ', epsilon_well
-       write(uout,'(a,t35,3g15.5)') 'r_well                         = ', r_well
-       write(uout,'(a,t35,3g15.5)') 'alpha_well                     = ', alpha_well
-       write(uout,*)
+         iatjat = iatat(iat,jat)
 
-      do iat = iatpt(ipt), iatpt(ipt)+natpt(ipt)-1
-         do jat = iatpt(jpt), iatpt(jpt)+natpt(jpt)-1
-            iatjat = iatat(iat,jat)
-            r2umin(iatjat) = r2atat(iatjat)-1.0d-4
-!           r2umin(iatjat) = r2uminin
-            r2umax(iatjat) = (rumaxfac*(rcut+racom(ipt)+racom(jpt)))**2
-        end do
-      end do
+         x = r1 - r_well
+         u0 = epsilon_well*(Half - (One/Pi)*atan(x/alpha_well))
+         u1 = -epsilon_well/Pi * alpha_well / (alpha_well**2 + x**2)
+         u2 = -Two*x* u1 / (alpha_well**2 + x**2)
 
-   else if (str(1:4) == 'calc') then
+      else
 
-      iatjat = iatat(iat,jat)
+         call Stop(txroutine, 'str value unsupported', uout)
 
-      x = r1 - r_well
-      u0 = epsilon_well*(Half - (One/Pi)*atan(x/alpha_well))
-      u1 = -epsilon_well/Pi * alpha_well / (alpha_well**2 + x**2)
-      u2 = -Two*x* u1 / (alpha_well**2 + x**2)
+      end if
 
-   else
+   end subroutine SquareWell
 
-      call Stop(txroutine, 'str value unsupported', uout)
-
-   end if
-
-end subroutine SquareWell
-
-!........................................................................
+   !........................................................................
 
 end subroutine EwaldSquareWell
 
@@ -355,7 +355,7 @@ subroutine ElstatScreen(str, ipt, jpt, iat, jat, r1, u0, u1, u2)
       do iat = iatpt(ipt), iatpt(ipt)+natpt(ipt)-1
          do jat = iatpt(jpt), iatpt(jpt)+natpt(jpt)-1
             iatjat = iatat(iat,jat)
-!           r2umin(iatjat) = r2atat(iatjat)-1.0d-4
+            !           r2umin(iatjat) = r2atat(iatjat)-1.0d-4
             r2umin(iatjat) = r2uminin
             r2umax(iatjat) = (rumaxfac*(rcut+racom(ipt)+racom(jpt)))**2
          end do
@@ -411,7 +411,7 @@ subroutine SetConfigurationUser(ipt, lsetconf)
 
    integer(4), intent(in) :: ipt           ! particle type
    logical,    intent(out) :: lsetconf     ! =.t, if match and call of user supplied lattice routine
-                                           ! =.false. otherwise
+   ! =.false. otherwise
    external setpa3
 
    lsetconf =.true.
@@ -522,18 +522,18 @@ subroutine SetOneHelix(ipt)
    phi = Two*asin((bond(ict)%eq/Two)/radhelix)
    nbeadperturn = TwoPi/phi
 
-!  write(*,*) 'ipt', ipt
-!  write(*,'(a,g15.5)') 'picth       ', pitch
-!  write(*,'(a,g15.5)') 'radhelix    ', radhelix
-!  write(*,'(a,g15.5)') 'phi       ', phi
-!  write(*,'(a,g15.5)') 'nbeadperturn', nbeadperturn
+   !  write(*,*) 'ipt', ipt
+   !  write(*,'(a,g15.5)') 'picth       ', pitch
+   !  write(*,'(a,g15.5)') 'radhelix    ', radhelix
+   !  write(*,'(a,g15.5)') 'phi       ', phi
+   !  write(*,'(a,g15.5)') 'nbeadperturn', nbeadperturn
 
    do iseg = 1, npct(ict)
       ip = ipnsegcn(iseg,ic)
       ro(1,ip) = radhelix*(cos((iseg-1)*phi))
       ro(2,ip) = radhelix*(sin((iseg-1)*phi))
       ro(3,ip) = pitch*(iseg-1)/nbeadperturn
-!     write(*,'(4g15.5)') ip, ro(1:3,ip)
+      !     write(*,'(4g15.5)') ip, ro(1:3,ip)
    end do
 
 end subroutine SetOneHelix
@@ -571,7 +571,7 @@ subroutine SetCubic2D1Surf(ipt)
    else
       zpos = -(boxlen2(3) + Two)
    end if
-   
+
    nset = 0
    do ix = 0, m-1
       do iy = 0, m-1
@@ -683,14 +683,14 @@ subroutine SetChainRandomTrans!(iptset) iptset is not needed
       if (itry > ntry) then                         ! number of trial attempts exceeds the maximal one ?
          if (master) write(uout,'(i5,a,i5,a,i5,a,i5,a)') nset, 'of', npct(ict), 'particles in chain', ic, 'set after', ntry, 'attemps'
          call Stop(txroutine, 'random configuration failed, itry > ntry', uout)
-     end if
+      end if
 
-! .. translate the chain so that the particle with smallest z-coordinate is positioned at zaim
+      ! .. translate the chain so that the particle with smallest z-coordinate is positioned at zaim
 
-     zaim = -boxlen2(3) + 12.0                       ! Niklas 2005-05-05
-     zlow = minval(ro(3,1:np))                    ! Niklas 2005-05-05
-     ro(3,1:np) = (zaim-zlow) + ro(3,1:np)        ! Niklas 2005-05-05
-! write(*,*) sum(ro(3,1:np))/np                   ! Niklas 2004-04-01
+      zaim = -boxlen2(3) + 12.0                       ! Niklas 2005-05-05
+      zlow = minval(ro(3,1:np))                    ! Niklas 2005-05-05
+      ro(3,1:np) = (zaim-zlow) + ro(3,1:np)        ! Niklas 2005-05-05
+      ! write(*,*) sum(ro(3,1:np))/np                   ! Niklas 2004-04-01
    end do
 
 end subroutine SetChainRandomTrans
@@ -741,7 +741,7 @@ subroutine SetCapsid(ipt)
       if (master) write(uout,'(i5,a,i5,a,i5,a,i5,a)') nset, 'of', nppt(ipt), 'particles of type', ipt,' set after', ntry, 'attemps'
       call Stop(txroutine, 'random configuration for capsid failed, itry > ntry', uout)
    end if
- end subroutine SetCapsid
+end subroutine SetCapsid
 
 !************************************************************************
 !> \page moluser moluser.F90
@@ -794,7 +794,7 @@ subroutine SetCapsid_250(ipt)
    call SetAtomPos(ip+2,ip+2,.false.)                 ! set trial atom positions
    lpset(nppt(ipt))=.true.
 
-  end subroutine  SetCapsid_250
+end subroutine  SetCapsid_250
 
 !************************************************************************
 !> \page moluser moluser.F90
@@ -824,37 +824,37 @@ subroutine SetCapsidRandom(ipt)
 
       ip=nset-1+ipnpt(ipt)
 
-! ... trial particle position
+      ! ... trial particle position
 
       do
-        ro(1,ip)=Two*sphrad*(Random(iseed)-0.5)
-        ro(2,ip)=Two*sphrad*(Random(iseed)-0.5)
-        ro(3,ip)=Two*sphrad*(Random(iseed)-0.5)
-        if ((ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2>=(rcap-radat(ipt))**2).and.   &
-        (ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2<=(rcap+dcap+radat(ipt))**2))  cycle
-        if (ro(1,ip)<-Two*sphrad.or.ro(1,ip)>Two*sphrad) cycle
-        if (ro(2,ip)<-Two*sphrad.or.ro(2,ip)>Two*sphrad) cycle
-        if (ro(3,ip)<-Two*sphrad.or.ro(3,ip)>Two*sphrad) cycle
-        if (ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2<=(rcap-radat(ipt))**2-0.1d0)  then
-           exit
-        else if ((ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2>=(rcap+dcap+radat(ipt))**2-0.1d0).and. &
-            (ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2<=sphrad**2-0.1d0))  then
-           exit
-        endif
+         ro(1,ip)=Two*sphrad*(Random(iseed)-0.5)
+         ro(2,ip)=Two*sphrad*(Random(iseed)-0.5)
+         ro(3,ip)=Two*sphrad*(Random(iseed)-0.5)
+         if ((ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2>=(rcap-radat(ipt))**2).and.   &
+               (ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2<=(rcap+dcap+radat(ipt))**2))  cycle
+         if (ro(1,ip)<-Two*sphrad.or.ro(1,ip)>Two*sphrad) cycle
+         if (ro(2,ip)<-Two*sphrad.or.ro(2,ip)>Two*sphrad) cycle
+         if (ro(3,ip)<-Two*sphrad.or.ro(3,ip)>Two*sphrad) cycle
+         if (ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2<=(rcap-radat(ipt))**2-0.1d0)  then
+            exit
+         else if ((ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2>=(rcap+dcap+radat(ipt))**2-0.1d0).and. &
+               (ro(1,ip)**2+ro(2,ip)**2+ro(3,ip)**2<=sphrad**2-0.1d0))  then
+            exit
+         endif
       end do
 
       call SetPartOriRandom(iseed,ori(1,1,ip))  ! set trial random particle orientation
       call SetAtomPos(ip,ip,.false.)            ! set trial atom positions
-         if (lWarnHCOverlap(ip, radatset, .true.)) cycle       ! check if atom-atom hard-core overlap
+      if (lWarnHCOverlap(ip, radatset, .true.)) cycle       ! check if atom-atom hard-core overlap
       lpset(ip)=.true.                          ! trial configuration accepted
       if (nset==nppt(ipt)) exit                  ! check if finnished
       nset=nset+1                               ! update nset
 
    end do
 
-if (itry > ntry) then                            ! number of trial attempts exceeds the maximal one ?
+   if (itry > ntry) then                            ! number of trial attempts exceeds the maximal one ?
       if (master) write(uout,'(i5,a,i5,a,i5,a,i5,a)') &
-         nset, 'of', nppt(ipt), 'particles of type', ipt,' set after', ntry, 'attemps'
+            nset, 'of', nppt(ipt), 'particles of type', ipt,' set after', ntry, 'attemps'
       call Stop(txroutine, 'random configuration failed, itry > ntry', uout)
    end if
 
@@ -888,7 +888,7 @@ subroutine SetInsideCapsid(ipt)
 
       ip=nset-1+ipnpt(ipt)
 
-! ... particle position
+      ! ... particle position
 
       do
          ro(1,ip)=Two*(rcap-radat(ipt))*(Random(iseed)-0.5)
@@ -909,7 +909,7 @@ subroutine SetInsideCapsid(ipt)
 
    end do
 
-if (itry > ntry) then                     ! number of trial attempts exceeds the maximal one ?
+   if (itry > ntry) then                     ! number of trial attempts exceeds the maximal one ?
       if (master) write(uout,'(i5,a,i5,a,i5,a,i5,a)') nset, 'of', nppt(ipt), 'particles of type', ipt,' set after', ntry, 'attemps'
       call Stop(txroutine, 'random configuration failed, itry > ntry', uout)
    end if
@@ -979,11 +979,11 @@ subroutine SetChainInsideCapsid!(iptset) iptset is not needed
 
       if (itry > ntry) then                         ! number of trial attempts exceeds the maximal one ?
          if (master) write(uout,'(i5,a,i5,a,i5,a,i5,a)') &
-            nset, 'of', npct(ict), 'particles in chain', ic, 'set after', ntry, 'attemps'
+               nset, 'of', npct(ict), 'particles in chain', ic, 'set after', ntry, 'attemps'
          call Stop(txroutine, 'random configuration failed, itry > ntry', uout)
       end if
 
-  end do
+   end do
 
 end subroutine SetChainInsideCapsid
 
@@ -1007,10 +1007,10 @@ subroutine SetSpool(ipt)
 
    integer(4) :: nset, ip
    integer(4) :: ncircle, n, nbeads        ! number of circles in one semi-sphere
-                                           ! number of beads on circle icircle
+   ! number of beads on circle icircle
    integer(4) :: icircle, jtry, ntry
    real(8)    :: bb, delta, alpha          ! rms bead-to-bead distance, circle-to-circle distance
-                                           ! angle at centre
+   ! angle at centre
    logical    :: lWarnHCOverlap
 
    alpha = twopi*8/360
@@ -1019,18 +1019,18 @@ subroutine SetSpool(ipt)
    ncircle = 0
    nbeads  = 0
    if (nppt(ipt) < int(twopi*(rcap-2*radat(ipt))/bb)) then
-       ncircle = 0
+      ncircle = 0
    else
       do  n = 1,10
          nbeads =  nbeads + int(twopi*(rcap-2*radat(ipt))*cos(n*alpha)/bb)
          if (nbeads >  (nppt(ipt)-int(twopi*(rcap-2*radat(ipt))/bb))/2)  then
-           ncircle = n
-           exit
-        end if
-     end do
+            ncircle = n
+            exit
+         end if
+      end do
    end if
    if (nbeads < (nppt(ipt)-int(twopi*(rcap-radat(ipt))/bb))/2) then
-     call Stop(txroutine, 'spool configuration failed, ncircle > nmax', uout)
+      call Stop(txroutine, 'spool configuration failed, ncircle > nmax', uout)
    end if
 
    nset = 1
@@ -1071,11 +1071,11 @@ subroutine SetSpoolm(ipt)
    character(40), parameter :: txroutine ='SetSpoolm'
    integer(4) :: nset, ip
    integer(4) :: ncircle, n, nbeads, m     ! number of circles in one semi-sphere
-                                           ! number of beads on circle icircle
-                                           ! number of layer
+   ! number of beads on circle icircle
+   ! number of layer
    integer(4) :: icircle, jtry, ntry, k, n0
    real(8)    :: bb, delta, alpha          ! rms bead-to-bead distance, circle-to-circle distance
-                                        ! angle at centre
+   ! angle at centre
    logical    :: lWarnHCOverlap
 
    alpha = twopi*8/360
@@ -1091,17 +1091,17 @@ subroutine SetSpoolm(ipt)
    end do
 
    if (nppt(ipt) < n0)  then
-       ncircle = 0
+      ncircle = 0
    else
       do  n = 1,7
          do k = 1, m
-         nbeads =  nbeads + int(twopi*(rcap-2*k*radat(ipt))*cos(n*alpha)/bb)
-         write(*,*) n, k, nbeads
-         if (nbeads >  (nppt(ipt)- n0)/2)  then
-            ncircle = n
-            exit
-         end if
-        end do
+            nbeads =  nbeads + int(twopi*(rcap-2*k*radat(ipt))*cos(n*alpha)/bb)
+            write(*,*) n, k, nbeads
+            if (nbeads >  (nppt(ipt)- n0)/2)  then
+               ncircle = n
+               exit
+            end if
+         end do
          if (nbeads >  (nppt(ipt)- n0)/2) then
             exit
          end if
@@ -1109,7 +1109,7 @@ subroutine SetSpoolm(ipt)
    end if
 
    if (nbeads < (nppt(ipt)-n0)/2) then
-     call Stop(txroutine, 'spool configuration failed, ncircle > nmax', uout)
+      call Stop(txroutine, 'spool configuration failed, ncircle > nmax', uout)
    end if
 
    nset = 1
@@ -1118,23 +1118,23 @@ subroutine SetSpoolm(ipt)
       do  k = 1, m
          ntry = int(twopi*(rcap-3*k*radat(ipt))*cos(icircle*alpha)/bb)
          do jtry = 1, ntry
-             ip=nset-1+ipnpt(ipt)
-             ro(1,ip)= (rcap-2*k*radat(ipt))*cos(icircle*alpha)*cos(twopi*jtry/ntry)
-             ro(2,ip)= (rcap-2*k*radat(ipt))*cos(icircle*alpha)*sin(twopi*jtry/ntry)
-             ro(3,ip)= (rcap-2*k*radat(ipt))*sin(icircle*alpha)
-             call SetPartOriRandom(iseed,ori(1,1,ip))    ! set trial random particle orientation
-             call SetAtomPos(ip,ip,.false.)              ! set trial atom positions
-             if (lWarnHCOverlap(ip, radatset, .true.)) cycle       ! check if atom-atom hard-core overlap
-             lpset(ip)=.true.
-             if (nset==nppt(ipt)) exit
-             nset=nset+1                   ! update nset
+            ip=nset-1+ipnpt(ipt)
+            ro(1,ip)= (rcap-2*k*radat(ipt))*cos(icircle*alpha)*cos(twopi*jtry/ntry)
+            ro(2,ip)= (rcap-2*k*radat(ipt))*cos(icircle*alpha)*sin(twopi*jtry/ntry)
+            ro(3,ip)= (rcap-2*k*radat(ipt))*sin(icircle*alpha)
+            call SetPartOriRandom(iseed,ori(1,1,ip))    ! set trial random particle orientation
+            call SetAtomPos(ip,ip,.false.)              ! set trial atom positions
+            if (lWarnHCOverlap(ip, radatset, .true.)) cycle       ! check if atom-atom hard-core overlap
+            lpset(ip)=.true.
+            if (nset==nppt(ipt)) exit
+            nset=nset+1                   ! update nset
          end do
          if (nset ==nppt(ipt)) exit
       end do
-    if (nset ==nppt(ipt)) exit
+      if (nset ==nppt(ipt)) exit
    end do
 
-  end subroutine SetSpoolm
+end subroutine SetSpoolm
 
 !************************************************************************
 !> \page moluser moluser.F90
@@ -1153,11 +1153,11 @@ subroutine SetSpoolm1(ipt)
    character(40), parameter :: txroutine ='SetSpoolm1'
    integer(4) :: nset, ip
    integer(4) :: ncircle, n, nbeads, m     ! number of circles in one semi-sphere
-                                           ! number of beads on circle icircle
-                                           ! number of layer
+   ! number of beads on circle icircle
+   ! number of layer
    integer(4) :: icircle, jtry, ntry, k, n0
    real(8)    :: bb, delta, alpha               ! rms bead-to-bead distance, circle-to-circle distance
-                                                                                        ! angle at centre
+   ! angle at centre
    logical    :: lWarnHCOverlap
 
    alpha = twopi*8/360
@@ -1169,11 +1169,11 @@ subroutine SetSpoolm1(ipt)
    nbeads = 0
 
    do k = 1, m
-     n0 = n0 + int(twopi*(rcap-2*k*radat(ipt))/bb)
+      n0 = n0 + int(twopi*(rcap-2*k*radat(ipt))/bb)
    end do
 
    if (nppt(ipt) < n0)  then
-       ncircle = 0
+      ncircle = 0
    else
       do n = 1,7
          do k = 1, m
@@ -1182,16 +1182,16 @@ subroutine SetSpoolm1(ipt)
             if (nbeads >  (nppt(ipt)- n0)/2)  then
                ncircle = n
                exit
-           end if
-        end do
-        if (nbeads >  (nppt(ipt)- n0)/2) then
-           exit
-        end if
-     end do
+            end if
+         end do
+         if (nbeads >  (nppt(ipt)- n0)/2) then
+            exit
+         end if
+      end do
    end if
 
    if (nbeads < (nppt(ipt)-n0)/2) then
-     call Stop(txroutine, 'spool configuration failed, ncircle > nmax', uout)
+      call Stop(txroutine, 'spool configuration failed, ncircle > nmax', uout)
    end if
 
    nset = 1
@@ -1214,7 +1214,7 @@ subroutine SetSpoolm1(ipt)
             lpset(ip)=.true.
             if (nset==nppt(ipt)) exit
             nset=nset+1                   ! update nset
-            end do
+         end do
          if (nset ==nppt(ipt)) exit
       end do
       if (nset ==nppt(ipt)) exit
@@ -1256,15 +1256,15 @@ subroutine setsheet(ipt,scfac1,scfac2,first)
    ipupp = ipnpt(ipt)+nppt(ipt)-1
 
 
-!   tmpang=atan(sqrt(1.0d0-0.6d0*aellipsoid**2/(aellipsoid**2-1.0d0))/(0.6d0*aellipsoid**2/sqrt(aellipsoid**2-1.0d0)))
+   !   tmpang=atan(sqrt(1.0d0-0.6d0*aellipsoid**2/(aellipsoid**2-1.0d0))/(0.6d0*aellipsoid**2/sqrt(aellipsoid**2-1.0d0)))
 
-!   tmpang=atan(sqrt(1.0d0-0.6d0*(aellipsoid**2-1.0d0)/aellipsoid)/sqrt(0.6d0*(aellipsoid**2-1.0d0)))
+   !   tmpang=atan(sqrt(1.0d0-0.6d0*(aellipsoid**2-1.0d0)/aellipsoid)/sqrt(0.6d0*(aellipsoid**2-1.0d0)))
 
-!   lx = 9.0d0
+   !   lx = 9.0d0
 
-!   lz = 4.0d0*radellipsoid*sqrt(0.6d0*(aellipsoid**2-1.0d0))
+   !   lz = 4.0d0*radellipsoid*sqrt(0.6d0*(aellipsoid**2-1.0d0))
 
-!   lz = 1.02d0*4.0d0*radellipsoid*sqrt(0.6d0*(aellipsoid**2-1.0d0))
+   !   lz = 1.02d0*4.0d0*radellipsoid*sqrt(0.6d0*(aellipsoid**2-1.0d0))
 
    lz = scfac1*4.0d0*radellipsoid*sqrt(0.6d0)*aellipsoid**2/sqrt(aellipsoid**2-1.0d0)
 
@@ -1274,7 +1274,7 @@ subroutine setsheet(ipt,scfac1,scfac2,first)
 
    lx = lx*scfac2
 
-!   write(6,*) lx, lz
+   !   write(6,*) lx, lz
 
    if (mod(nppt(ipt),nx*nz) == 0.and.nppt(ipt)/(nx*nz) == 1) then
 
@@ -1347,15 +1347,15 @@ subroutine setsheet(ipt,scfac1,scfac2,first)
 
    end if
 
-!   If (twoD) then
-!      Boxlen(1)=nx*lx
-!      Boxlen(2)=0.5d0*nz*lz
-!   Else
-!      Boxlen(3)=0.5d0*nz*lz
-!   End If
+   !   If (twoD) then
+   !      Boxlen(1)=nx*lx
+   !      Boxlen(2)=0.5d0*nz*lz
+   !   Else
+   !      Boxlen(3)=0.5d0*nz*lz
+   !   End If
 
-!   call SetBoxParam
-!   if (lewald) call EwaldSetup
+   !   call SetBoxParam
+   !   if (lewald) call EwaldSetup
 
    do ip=iplow, ipupp
       ro(1,ip)=ro(1,ip)-com(1)/nppt(ipt)
@@ -1363,7 +1363,7 @@ subroutine setsheet(ipt,scfac1,scfac2,first)
       ro(3,ip)=ro(3,ip)-com(3)/nppt(ipt)
       call SetAtomPos(ip, ip, .false.)
       if (lWarnHCOverlap(ip, radatset, .true.)) call Stop('SetSheet', 'Hard spere overlap.', uout)
-!      if (CheckHCOverlap(ip)) call Stop('SetSheet', 'Hard spere overlap.', uout)
+      !      if (CheckHCOverlap(ip)) call Stop('SetSheet', 'Hard spere overlap.', uout)
       if (CheckPartOutsideBox(ip)) call Stop('SetSheet', 'Particle outside box.', uout)
    end do
 
@@ -1442,20 +1442,20 @@ subroutine SetChainLinePMA!(iptset) iptset is not used
    if (.not.first) return                                   ! should be called only once
    first =.false.
 
-! setup of translational vectors for up to 20 chains
+   ! setup of translational vectors for up to 20 chains
 
    if (nc>20) call Stop(txroutine, 'too many PMA chains', uout)
 
    n=20   ! empirically estimated
    k=0
-      do i=1,5
-         do j=1,4
-            k=k+1
-            dtranx(k)=(float(i)-0.5)*boxlen(1)/n*(-1.)**k
-            dtrany(k)=(float(j)-0.5)*boxlen(2)/n*(-1.)**k
-            dtranz(k)=(float(k)-0.5)*boxlen(3)/n
-         enddo
+   do i=1,5
+      do j=1,4
+         k=k+1
+         dtranx(k)=(float(i)-0.5)*boxlen(1)/n*(-1.)**k
+         dtrany(k)=(float(j)-0.5)*boxlen(2)/n*(-1.)**k
+         dtranz(k)=(float(k)-0.5)*boxlen(3)/n
       enddo
+   enddo
 
 
    alpha=acos(-1.d0/3.d0)/2.d0                              ! half of the tethraedral angle (109.47 deg)
@@ -1474,13 +1474,13 @@ subroutine SetChainLinePMA!(iptset) iptset is not used
             else                                            ! a remaining segment
                jp = ipnsegcn(iseg-1,ic)
                if(mod(iseg,2) == 0)then
-                 ro(3,ip)=zero                              + dtranz(ic)  !start building chains at different locations in the MC cell
-                 ro(2,ip)=bondloc*cos(alpha)                + dtrany(ic)
-                 ro(1,ip)=ro(1,jp)+sqrt(2.d0/3.d0)*bondloc
+                  ro(3,ip)=zero                              + dtranz(ic)  !start building chains at different locations in the MC cell
+                  ro(2,ip)=bondloc*cos(alpha)                + dtrany(ic)
+                  ro(1,ip)=ro(1,jp)+sqrt(2.d0/3.d0)*bondloc
                else
-                 ro(3,ip)=zero                              + dtranz(ic)
-                 ro(2,ip)=zero                              + dtrany(ic)
-                 ro(1,ip)=ro(1,jp)+sqrt(2.d0/3.d0)*bondloc
+                  ro(3,ip)=zero                              + dtranz(ic)
+                  ro(2,ip)=zero                              + dtrany(ic)
+                  ro(1,ip)=ro(1,jp)+sqrt(2.d0/3.d0)*bondloc
                endif
             end if
             if (CheckPartOutsideBox(ip)) cycle              ! check if particle is outside the box
@@ -1521,11 +1521,11 @@ subroutine DumpUser(iStage)
    implicit none
    integer(4), intent(in) :: iStage
    if (master) then
-!     call BBDump(iStage)
-!     call ChainCOMDump(iStage)
-!     call ChainReeDump(iStage)
-!     call DipMomTotDump(iStage)
-     if (txuser == 'jasper_xy_coord') call xy_coordinates_Jasper(iStage)
+      !     call BBDump(iStage)
+      !     call ChainCOMDump(iStage)
+      !     call ChainReeDump(iStage)
+      !     call DipMomTotDump(iStage)
+      if (txuser == 'jasper_xy_coord') call xy_coordinates_Jasper(iStage)
    end if
 
 end subroutine DumpUser
@@ -1562,7 +1562,7 @@ subroutine BBDump(iStage)
 
       call FileOpen(uuser, fuser, 'form/noread')
 
-! ... get particle numbers of the benzene molecules
+      ! ... get particle numbers of the benzene molecules
 
       ip1 = ipnpt(2)
       ip2 = ip1+1
@@ -1643,8 +1643,8 @@ subroutine ChainCOMDump(iStage)
          call FileFlush(upos)
       else if (txstart == 'continue') then             ! advance fpos
          do m = 1, (nstep2/idumplocal)*(nstep1beg-1)+1
-         read(upos) idum, dum, dum, dum
-         read(upos) (dum,dum,dum,ic = 1,nc)
+            read(upos) idum, dum, dum, dum
+            read(upos) (dum,dum,dum,ic = 1,nc)
          end do
       end if
 
@@ -1671,17 +1671,17 @@ subroutine ChainCOMDump(iStage)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-subroutine GetChainData
-   do ic = 1, nc
-      call UndoPBCChain(ro(1,ipnsegcn(1,ic)), ic, 1, vaux)
-      call CalcChainProperty(ic, vaux, ChainProperty)
-      rcom(1:3,ic) = ChainProperty%ro(1:3)
-   end do
-end subroutine GetChainData
+   subroutine GetChainData
+      do ic = 1, nc
+         call UndoPBCChain(ro(1,ipnsegcn(1,ic)), ic, 1, vaux)
+         call CalcChainProperty(ic, vaux, ChainProperty)
+         rcom(1:3,ic) = ChainProperty%ro(1:3)
+      end do
+   end subroutine GetChainData
 
-!........................................................................
+   !........................................................................
 
 end subroutine ChainCOMDump
 
@@ -1724,7 +1724,7 @@ subroutine ChainReeDump(iStage)
          call FileFlush(uuser)
       else if (txstart == 'continue') then             ! advance fuser
          do m = 1, (nstep2/idumplocal)*(nstep1beg-1)+1
-         read(uuser) (dum,dum,dum,ic = 1,nc)
+            read(uuser) (dum,dum,dum,ic = 1,nc)
          end do
       end if
 
@@ -1750,17 +1750,17 @@ subroutine ChainReeDump(iStage)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-subroutine GetChainData
-   do ic = 1, nc
-      call UndoPBCChain(ro(1,ipnsegcn(1,ic)), ic, 1, vaux)
-      call CalcChainProperty(ic, vaux, ChainProperty)
-      ree(1:3,ic) = ChainProperty%ree(1:3)
-   end do
-end subroutine GetChainData
+   subroutine GetChainData
+      do ic = 1, nc
+         call UndoPBCChain(ro(1,ipnsegcn(1,ic)), ic, 1, vaux)
+         call CalcChainProperty(ic, vaux, ChainProperty)
+         ree(1:3,ic) = ChainProperty%ree(1:3)
+      end do
+   end subroutine GetChainData
 
-!........................................................................
+   !........................................................................
 
 end subroutine ChainReeDump
 
@@ -1786,7 +1786,7 @@ subroutine DipMomTotDump(iStage)
    case (iReadInput)
 
       call FileOpen(uuser, fuser, 'unform/noread')
-!     idumplocal = 1                                ! Jocke
+      !     idumplocal = 1                                ! Jocke
       idumplocal = 100
 
    case (iBeforeSimulation)
@@ -1815,15 +1815,15 @@ subroutine DipMomTotDump(iStage)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-subroutine DipMomTotDumpSub
-   call CalcSysDipMom(dipmomtot)
-   write(uuser) dipmomtot(1:3)
-   call FileFlush(uuser)
-end subroutine DipMomTotDumpSub
+   subroutine DipMomTotDumpSub
+      call CalcSysDipMom(dipmomtot)
+      write(uuser) dipmomtot(1:3)
+      call FileFlush(uuser)
+   end subroutine DipMomTotDumpSub
 
-!........................................................................
+   !........................................................................
 
 end subroutine DipMomTotDump
 
@@ -1852,34 +1852,34 @@ subroutine xy_coordinates_Jasper(iStage)
 
    case (iBeforeSimulation)
 
-     allocate(xy(1:2,1:np))
-     xy = 0.0E+00
+      allocate(xy(1:2,1:np))
+      xy = 0.0E+00
 
    case (iSimulationStep)
 
-     read(uuser,*) npixel(1)                        ! number of pixels in x-dir
-     npixel(2)=npixel(1)                            ! number of pixels in y-dir
-     ip = 0
-     do ipt = 1, npt                                ! loop over particle types
-        read(uuser,*)
-        read(uuser,*, iostat = ierr) nppt(ipt)
-        if (ierr /= 0) call WriteIOStat(txroutine, 'read of number of particles failed', ierr, 2, uout)
-        do iploc = 1, nppt(ipt)                     ! loop over particles of particle type ipt
-           ip = ip + 1
-           read(uuser,*,iostat = ierr) xy(1,ip), xy(2,ip)
-           write(*,*) 'ip ok', ip
-           if (ierr /= 0) call WriteIOStat(txroutine, 'read of particles failed', ierr, 2, uout)
-        end do
-     end do
+      read(uuser,*) npixel(1)                        ! number of pixels in x-dir
+      npixel(2)=npixel(1)                            ! number of pixels in y-dir
+      ip = 0
+      do ipt = 1, npt                                ! loop over particle types
+         read(uuser,*)
+         read(uuser,*, iostat = ierr) nppt(ipt)
+         if (ierr /= 0) call WriteIOStat(txroutine, 'read of number of particles failed', ierr, 2, uout)
+         do iploc = 1, nppt(ipt)                     ! loop over particles of particle type ipt
+            ip = ip + 1
+            read(uuser,*,iostat = ierr) xy(1,ip), xy(2,ip)
+            write(*,*) 'ip ok', ip
+            if (ierr /= 0) call WriteIOStat(txroutine, 'read of particles failed', ierr, 2, uout)
+         end do
+      end do
 
-! ... copy to global particle position
+      ! ... copy to global particle position
 
-     call SetObjectParam1
-     call SetObjectParam2
-     ro(1,1:np) = xy(1,1:np) - npixel(1)/2
-     ro(2,1:np) = xy(2,1:np) - npixel(2)/2
-     ro(3,1:np) = Zero
-     r(1:3,1:np) = ro(1:3,1:np)
+      call SetObjectParam1
+      call SetObjectParam2
+      ro(1,1:np) = xy(1,1:np) - npixel(1)/2
+      ro(2,1:np) = xy(2,1:np) - npixel(2)/2
+      ro(3,1:np) = Zero
+      r(1:3,1:np) = ro(1:3,1:np)
 
    case (iAfterMacrostep)
 
@@ -1907,18 +1907,18 @@ subroutine GroupUser(iStage, m, txtype, lsetconf)
    use MolModule
 
    integer(4),    intent(in)  :: iStage     != 1 call for setting ngr
-                                           ! ngr(m)       number of groups
-                                           != 2 call for setting iptgr, and grvar()%label
-                                           ! iptgr(igr,m)       partcle type associated with group igr
-                                           ! grvar(m,igr)%label label of members in gropup igr
-                                           ! = 4 call for calculating igrpn and grvar()%value
-                                           ! igrpn(i,m)         group number of particle i
-                                           ! grvar(m,igr)%value number of particles belonging to group igr
+   ! ngr(m)       number of groups
+   != 2 call for setting iptgr, and grvar()%label
+   ! iptgr(igr,m)       partcle type associated with group igr
+   ! grvar(m,igr)%label label of members in gropup igr
+   ! = 4 call for calculating igrpn and grvar()%value
+   ! igrpn(i,m)         group number of particle i
+   ! grvar(m,igr)%value number of particles belonging to group igr
    integer(4),    intent(in)  :: m         ! = 1 classification of reference particles
-                                           ! = 2 classification of field particles
+   ! = 2 classification of field particles
    character(20), intent(in)  :: txtype(2) ! lable of type of group division
    logical,       intent(out) :: lsetconf  ! =.true. if match and use of user supplied group section
-                                           ! =.false. otherwise
+   ! =.false. otherwise
 
    lsetconf =.true.
    if (txtype(m) == 'benzene_in_water_1') then
@@ -2583,58 +2583,58 @@ subroutine GroupNetworkGenerations(iStage,m)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-recursive subroutine AssignChainGeneration(ic,jc,igencn)
+   recursive subroutine AssignChainGeneration(ic,jc,igencn)
 
-   implicit none
+      implicit none
 
-   integer(4), intent(in)     :: ic, jc
-   integer(4), intent(inout)  :: igencn(0:nc)
+      integer(4), intent(in)     :: ic, jc
+      integer(4), intent(inout)  :: igencn(0:nc)
 
-   integer(4)  :: jccl
-   integer(4)  :: icl, ibondcl
-   integer(4)  :: ipnode
+      integer(4)  :: jccl
+      integer(4)  :: icl, ibondcl
+      integer(4)  :: ipnode
 
-   if ((igencn(ic) > (igencn(jc)+1)) .or. (igencn(ic) == 0)) then
-      igencn(ic) = igencn(jc) + 1
-      do icl = 1, nclcn(ic)
-         ipnode = ipnclcn(icl,ic)
-         do ibondcl = 1, nbondcl(ipnode)
-            jccl = icnclpn(ibondcl,ipnode)
-            if (ic == jccl) cycle ! ... don't go back to where you came from
-            call AssignChainGeneration(jccl,ic,igencn)
+      if ((igencn(ic) > (igencn(jc)+1)) .or. (igencn(ic) == 0)) then
+         igencn(ic) = igencn(jc) + 1
+         do icl = 1, nclcn(ic)
+            ipnode = ipnclcn(icl,ic)
+            do ibondcl = 1, nbondcl(ipnode)
+               jccl = icnclpn(ibondcl,ipnode)
+               if (ic == jccl) cycle ! ... don't go back to where you came from
+               call AssignChainGeneration(jccl,ic,igencn)
+            end do
          end do
-      end do
-   else
-      continue
-   end if
-
-end subroutine AssignChainGeneration
-
-!........................................................................
-
-subroutine SetNetworkGenerationPointer
-
-   use MolModule
-   implicit none
-
-   integer(4)  :: ip
-   integer(4)  :: ibondcl
-   integer(4)  :: ic
-
-   do ip = 1, np
-      if ((nbondcl(ip) > 0) .and. (icnpn(ip) == 0)) then ! ip is a node: It got crosslinks but it's no part of a chain
-         do ibondcl = 1, nbondcl(ip)
-            ic = icnpn(bondcl(ibondcl,ip))
-            nclcn(ic) = nclcn(ic) + 1
-            icnclpn(ibondcl,ip) = ic
-            ipnclcn(nclcn(ic),ic) = ip
-         end do
+      else
+         continue
       end if
-   end do
 
-end subroutine SetNetworkGenerationPointer
+   end subroutine AssignChainGeneration
+
+   !........................................................................
+
+   subroutine SetNetworkGenerationPointer
+
+      use MolModule
+      implicit none
+
+      integer(4)  :: ip
+      integer(4)  :: ibondcl
+      integer(4)  :: ic
+
+      do ip = 1, np
+         if ((nbondcl(ip) > 0) .and. (icnpn(ip) == 0)) then ! ip is a node: It got crosslinks but it's no part of a chain
+            do ibondcl = 1, nbondcl(ip)
+               ic = icnpn(bondcl(ibondcl,ip))
+               nclcn(ic) = nclcn(ic) + 1
+               icnclpn(ibondcl,ip) = ic
+               ipnclcn(nclcn(ic),ic) = ip
+            end do
+         end if
+      end do
+
+   end subroutine SetNetworkGenerationPointer
 
 end subroutine GroupNetworkGenerations
 
@@ -2694,7 +2694,7 @@ subroutine GroupWeakCharge(iStage,m)
                igr = igr + 1
                iptgr(igr,m) = ipt
                grvar(igrpnt(m,igr))%label = trim(adjustl(txchargestate(ichargestate)))//' '//&
-                                           &trim(adjustl(txpt(ipt)))
+                     &trim(adjustl(txpt(ipt)))
                igrref(ichargestate,ipt) = igr
             end do
          else ! no charge or fixed charge
@@ -2735,7 +2735,7 @@ subroutine StaticUser(iStage)
 
    integer(4), intent(in) :: iStage
 
-! ... place routines for serial computation here
+   ! ... place routines for serial computation here
 
    if (master) then
       if (txuser == 'scalardemo') call ScalarDemo1(iStage, u%tot, uout)
@@ -2746,14 +2746,14 @@ subroutine StaticUser(iStage)
       if (txuser(1:4) == 'comp') call DoComplexation(iStage)
 
       if(txuser == 'ellipsoid') then     ! ellipsoid Erik W
-!        call Min(iStage)
-          call S1(iStage)
-!        call S2(iStage)
-!        call Q(iStage)
-!        call C2(iStage)
-          call CylDistFunc(iStage)
-          call SFPBC2D(iStage)
-!        call SFPBC2DNoAv(iStage)
+         !        call Min(iStage)
+         call S1(iStage)
+         !        call S2(iStage)
+         !        call Q(iStage)
+         !        call C2(iStage)
+         call CylDistFunc(iStage)
+         call SFPBC2D(iStage)
+         !        call SFPBC2DNoAv(iStage)
       end if
 
       if(txuser == 'twocomponentmodel_corr') then
@@ -2796,14 +2796,16 @@ subroutine StaticUser(iStage)
 
       if (txuser == 'jurij') call Z_DF_Slit(iStage)     ! Jurij Rescic  distribution in a slit
       if (txuser == 'rudi') call ElMom(iStage)     ! Rudi Podgorni  electrostatic moments
+      if (txuser == 'emile') call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
 
    end if
 
-! ... place routines for parallel computation here
+   ! ... place routines for parallel computation here
 
    if (txuser(1:9) == 'md_dipole') then   ! Dipole project with Gunnar Karlström
-       call DomainDriver(iStage)           ! domain analysis based on Kirkwoods gk-factor
+      call DomainDriver(iStage)           ! domain analysis based on Kirkwoods gk-factor
    endif
+
 
 end subroutine StaticUser
 
@@ -2877,16 +2879,16 @@ subroutine ScalarDemo2(iStage,unit)
    type(scalar_var), save :: var(nvar)
    real(8)                :: value
 
-!  namelist /nmlScalarDemo/ xxxx
+   !  namelist /nmlScalarDemo/ xxxx
 
    if (slave) return
 
-!   if (ltrace) call WriteTrace(2, txroutine, iStage)
+   !   if (ltrace) call WriteTrace(2, txroutine, iStage)
 
    select case (iStage)
    case (iReadInput)
-!     rewind(uin)
-!     read(uin,nmlScalarDemo)
+      !     rewind(uin)
+      !     read(uin,nmlScalarDemo)
       var(1)%label = 'scalar 1:  1*upot               = '
       var(2)%label = 'scalar 2:  2*upot               = '
       var%norm = One/np
@@ -2904,8 +2906,8 @@ subroutine ScalarDemo2(iStage,unit)
       call ScalarSample(iStage, 1, nvar, var)
       call ScalarNorm(iStage, 1, nvar, var, 1)
       if (lsim .and. master) write(ucnf) var
-!     call WriteHead(2, txheading, unit)
-!     call ScalarWrite(iStage, 1, nvar, var, 1, '(a,t35,4f15.5,f15.0)', unit)
+      !     call WriteHead(2, txheading, unit)
+      !     call ScalarWrite(iStage, 1, nvar, var, 1, '(a,t35,4f15.5,f15.0)', unit)
    case (iAfterSimulation)
       call ScalarSample(iStage, 1, nvar, var)
       call ScalarNorm(iStage, 1, nvar, var, 1)
@@ -2966,10 +2968,10 @@ subroutine BondOrder(iStage)
       npart = 0
       nframe = nframe + 1
       do ip=1,np
-          nneigh = 0
-!         if(abs(ro(1,ip))>boxlen2(1)-3*radat(1)) cycle
-!         if(abs(ro(2,ip))>boxlen2(2)-3*radat(1)) cycle
-!         if(abs(ro(3,ip))>boxlen2(3)-3*radat(1)) cycle
+         nneigh = 0
+         !         if(abs(ro(1,ip))>boxlen2(1)-3*radat(1)) cycle
+         !         if(abs(ro(2,ip))>boxlen2(2)-3*radat(1)) cycle
+         !         if(abs(ro(3,ip))>boxlen2(3)-3*radat(1)) cycle
 
          do jp=1,np
             if (jp==ip) cycle                          ! exclude center particle
@@ -3059,10 +3061,10 @@ subroutine TabulationQl(lmax,qlsum,op)
    op = 0.0d0
    do l = 0,lmax
       op = op + abs(qlsum(l)-qlhex2d(l))
-       write(*,*) 'l, qlsum(l), qlhex2d(l)',l, qlsum(l),qlhex2d(l)
+      write(*,*) 'l, qlsum(l), qlhex2d(l)',l, qlsum(l),qlhex2d(l)
    end do
    op = op/lmax
-    write(*,'(a,7f12.6)') 'Tab..., op', qlsum(1:6), op
+   write(*,'(a,7f12.6)') 'Tab..., op', qlsum(1:6), op
 end subroutine TabulationQl
 
 !************************************************************************
@@ -3072,7 +3074,7 @@ end subroutine TabulationQl
 !************************************************************************
 
 
-   subroutine ChainBeadCylContact(iStage)
+subroutine ChainBeadCylContact(iStage)
 
    use MolModule
    implicit none
@@ -3112,13 +3114,13 @@ end subroutine TabulationQl
       nbin = npct(1)
       if (nbin > mnbin_df) call Stop(txroutine, 'nbin > mnbin_df', uout)
 
-! ... set nvar as well as allocate memory
+      ! ... set nvar as well as allocate memory
 
       nvar = nc
       allocate(var(nvar), ipnt(nc, ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do ic = 1, nc                         ! loop over all chains
@@ -3150,12 +3152,12 @@ end subroutine TabulationQl
          ict = ictcn(ic)
          do iseg = 1, npct(ict)
             ip = ipnsegcn(iseg,ic)
-               r2 = ro(1,ip)**2 + ro(2,ip)**2
-               if (r2 < rcontact**2) then
-                  ivar = ipnt(ic,1)
-                  ibin = iseg-1
-                  var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
-               end if
+            r2 = ro(1,ip)**2 + ro(2,ip)**2
+            if (r2 < rcontact**2) then
+               ivar = ipnt(ic,1)
+               ibin = iseg-1
+               var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
+            end if
          end do
       end do
 
@@ -3166,19 +3168,19 @@ end subroutine TabulationQl
 
    case (iAfterSimulation)
 
-    write(*,*) '1'
+      write(*,*) '1'
       call DistFuncSample(iStage, nvar, var)
-    write(*,*) '2'
+      write(*,*) '2'
       call WriteHead(2, txheading, uout)
-    write(*,*) '3'
+      write(*,*) '3'
       write(uout,'(a,t35,f8.2)') 'upper contact distance         = ', rcontact
       call DistFuncHead(nvar, var, uout)
-    write(*,*) '4'
+      write(*,*) '4'
       call DistFuncWrite(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
-    write(*,*) '5'
+      write(*,*) '5'
 
-     deallocate(var, ipnt)
-    write(*,*) '6'
+      deallocate(var, ipnt)
+      write(*,*) '6'
 
    end select
 
@@ -3297,9 +3299,9 @@ subroutine S1(iStage)
             tmp(j) = tmp(j) + ori(j,1,ip)
          end do
       end do
-       do j=1, mnvar
-          var(j)%value = tmp(j)
-       end do
+      do j=1, mnvar
+         var(j)%value = tmp(j)
+      end do
 
       call ScalarSample(iStage, 1, nvar, var)
 
@@ -3383,9 +3385,9 @@ subroutine S2(iStage)
             tmp(j) = tmp(j) + 1.5d0*ori(j,3,ip)**2-0.5d0
          end do
       end do
-       do j=1, nvar
-          var(j)%value = tmp(j)
-       end do
+      do j=1, nvar
+         var(j)%value = tmp(j)
+      end do
 
       call ScalarSample(iStage, 1, nvar, var)
 
@@ -3551,10 +3553,10 @@ subroutine Q(iStage)
          y = ori(2,3,ip)/sqrt(ori(1,3,ip)**2+ori(2,3,ip)**2)
          tmp(1) = tmp(1) + 2.0d0*x*y
          tmp(2) = tmp(2) + x**2 - y**2
-       end do
-       do j=1, nvar
-          var(j)%value = tmp(j)
-       end do
+      end do
+      do j=1, nvar
+         var(j)%value = tmp(j)
+      end do
 
       call ScalarSample(iStage, 1, nvar, var)
 
@@ -3627,14 +3629,14 @@ subroutine CylDistFunc(iStage)
       rewind(uin)
       read(uin,nmlCylDistFunc)
 
-! ... check condition
+      ! ... check condition
 
       if(vtype(1)%nbin(1) > mnbin_df2d) call Stop('CylDistFunc', 'vtype(1)%nbin(1) > mnbin_df2d', uout)
       if(vtype(1)%nbin(2) > mnbin_df2d) call Stop('CylDistFunc', 'vtype(1)%nbin(2) > mnbin_df2d', uout)
 
    case (iWriteInput)
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = ntype*npt
       if (.not.allocated(var)) then
@@ -3642,7 +3644,7 @@ subroutine CylDistFunc(iStage)
          ipnt = 0
       end if
 
-! ... set ipnt, label, vlow, vupp, and nbin
+      ! ... set ipnt, label, vlow, vupp, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -3722,7 +3724,7 @@ subroutine CylDistFunc(iStage)
 
    case (iAfterMacrostep)
 
-! ... normalization
+      ! ... normalization
 
       if(master) call DistFunc2DSample(iStage, nvar, var)
       if(lsim .and. master) write(ucnf) var(1:nvar)
@@ -3751,33 +3753,33 @@ subroutine CylDistFunc(iStage)
          write(uout,'(a,t35,2i5,5x,a,i5,2x,a)') 'number of grid points          = ', var(1)%nbin, '(',mnbin_df2d,')'
          call DistFunc2DHead(nvar, var, uout)
 
-!         inquire (uuser, opened=connected)
-!         if (.not.connected) call FileOpen(uuser, fuser, 'form/noread')
-!         write(uuser,'(a)') '2d CylDistFunc'
-!         write(uuser,'(a)')  '1'
-!         write(uuser,'(a)') txtype(1)
-!         write(uuser,'(a)')  '1'
-!         do ibin1=0, var(1)%nbin(1)-1
-!            write(uuser,'')
-!            do ibin2=0, var(1)%nbin(2)-1
-!              tmp = Boxlen(1)*Boxlen(2)*Boxlen(3)/(TwoPi*var(1)%bin(1)*(Two*(var(1)%min(2)+ibin2*var(1)%bin(2))*var(1)%bin(2) + var(1)%bin(2)**2))/(Half*(np-1))
-!              norm = InvFlt(var(1)%avs1(ibin1,ibin2))
-!              ratio = var(2)%avs1(ibin1,ibin2)*norm
-!              dratio = var(2)%avsd(ibin1,ibin2)*norm
-!              ratio2 = var(3)%avs1(ibin1,ibin2)*norm
-!              dratio2 = var(3)%avsd(ibin1,ibin2)*norm
-!              write(uuser,'(8e13.4)') var(1)%min(1)+(ibin1+0.5)*var(1)%bin(1), var(1)%min(2)+(ibin2+0.5)*var(1)%bin(2), var(1)%avs1(ibin1,ibin2)*tmp, var(1)%avsd(ibin1,ibin2)*tmp, ratio, dratio, rati
-!            end do
-!            write(uuser,'(a1)') ' '
-!         end do
+         !         inquire (uuser, opened=connected)
+         !         if (.not.connected) call FileOpen(uuser, fuser, 'form/noread')
+         !         write(uuser,'(a)') '2d CylDistFunc'
+         !         write(uuser,'(a)')  '1'
+         !         write(uuser,'(a)') txtype(1)
+         !         write(uuser,'(a)')  '1'
+         !         do ibin1=0, var(1)%nbin(1)-1
+         !            write(uuser,'')
+         !            do ibin2=0, var(1)%nbin(2)-1
+         !              tmp = Boxlen(1)*Boxlen(2)*Boxlen(3)/(TwoPi*var(1)%bin(1)*(Two*(var(1)%min(2)+ibin2*var(1)%bin(2))*var(1)%bin(2) + var(1)%bin(2)**2))/(Half*(np-1))
+         !              norm = InvFlt(var(1)%avs1(ibin1,ibin2))
+         !              ratio = var(2)%avs1(ibin1,ibin2)*norm
+         !              dratio = var(2)%avsd(ibin1,ibin2)*norm
+         !              ratio2 = var(3)%avs1(ibin1,ibin2)*norm
+         !              dratio2 = var(3)%avsd(ibin1,ibin2)*norm
+         !              write(uuser,'(8e13.4)') var(1)%min(1)+(ibin1+0.5)*var(1)%bin(1), var(1)%min(2)+(ibin2+0.5)*var(1)%bin(2), var(1)%avs1(ibin1,ibin2)*tmp, var(1)%avsd(ibin1,ibin2)*tmp, ratio, dratio, rati
+         !            end do
+         !            write(uuser,'(a1)') ' '
+         !         end do
 
-! ... normalize
+         ! ... normalize
 
          do ibin1=0, var(1)%nbin(1)-1
             do ibin2=0, var(1)%nbin(2)-1
-              tmp = Boxlen(1)*Boxlen(2)*Boxlen(3)/(TwoPi*var(1)%bin(1)*(Two*(var(1)%min(2)+ibin2*var(1)%bin(2))*var(1)%bin(2) + var(1)%bin(2)**2))/(Half*(np-1))
-              var(1)%avs1(ibin1,ibin2)=var(1)%avs1(ibin1,ibin2)*tmp
-              var(1)%avsd(ibin1,ibin2)=var(1)%avsd(ibin1,ibin2)*tmp
+               tmp = Boxlen(1)*Boxlen(2)*Boxlen(3)/(TwoPi*var(1)%bin(1)*(Two*(var(1)%min(2)+ibin2*var(1)%bin(2))*var(1)%bin(2) + var(1)%bin(2)**2))/(Half*(np-1))
+               var(1)%avs1(ibin1,ibin2)=var(1)%avs1(ibin1,ibin2)*tmp
+               var(1)%avsd(ibin1,ibin2)=var(1)%avsd(ibin1,ibin2)*tmp
             end do
          end do
 
@@ -3798,7 +3800,7 @@ subroutine CylDistFunc(iStage)
 
    end select
 
-    if (ltime) call CpuAdd('stop', 'CylDistFunc', 1, uout)
+   if (ltime) call CpuAdd('stop', 'CylDistFunc', 1, uout)
 
 end subroutine CylDistFunc
 
@@ -3857,7 +3859,7 @@ subroutine SFPBC2D(iStage)
 
    case (iWriteInput)
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = ntype*npt**2
       if (.not.allocated(var)) then
@@ -3870,7 +3872,7 @@ subroutine SFPBC2D(iStage)
          sfparsd = 0.0E+00
       end if
 
-! ... set ipnt, label, vlow, vupp, and nbin
+      ! ... set ipnt, label, vlow, vupp, and nbin
 
       nvar = 0
       do itype = 1, ntype
@@ -3958,12 +3960,12 @@ subroutine SFPBC2D(iStage)
                   do jbin = -1, nbin(1)-1
                      if (mod(itype,3) == 1) then
                         var(ivar)%avs2(jbin,ibin) = var(ivar)%avs2(jbin,ibin)+ &
-                             sum(real(eikrwff(jbin,ibin,dlow:dupp,ipt))*real(eikrwff(jbin,ibin,dlow:dupp,jpt)) &
-                          +aimag(eikrwff(jbin,ibin,dlow:dupp,ipt))*aimag(eikrwff(jbin,ibin,dlow:dupp,jpt)))
+                              sum(real(eikrwff(jbin,ibin,dlow:dupp,ipt))*real(eikrwff(jbin,ibin,dlow:dupp,jpt)) &
+                              +aimag(eikrwff(jbin,ibin,dlow:dupp,ipt))*aimag(eikrwff(jbin,ibin,dlow:dupp,jpt)))
                      else if (mod(itype,3) == 2) then
                         var(ivar)%avs2(jbin,ibin) = var(ivar)%avs2(jbin,ibin)+ &
-                             sum(real(eikr(jbin,ibin,dlow:dupp,ipt))*real(eikr(jbin,ibin,dlow:dupp,jpt)) &
-                             +aimag(eikr(jbin,ibin,dlow:dupp,ipt))*aimag(eikr(jbin,ibin,dlow:dupp,jpt)))
+                              sum(real(eikr(jbin,ibin,dlow:dupp,ipt))*real(eikr(jbin,ibin,dlow:dupp,jpt)) &
+                              +aimag(eikr(jbin,ibin,dlow:dupp,ipt))*aimag(eikr(jbin,ibin,dlow:dupp,jpt)))
                      else if (mod(itype,3) == 0) then
                         var(ivar)%avs2(jbin,ibin) = var(ivar)%avs2(jbin,ibin)+ sum(ffstore(jbin,ibin,dlow:dupp,ipt))
                      end if
@@ -3975,7 +3977,7 @@ subroutine SFPBC2D(iStage)
 
    case (iAfterMacrostep)
 
-! ... normalization
+      ! ... normalization
 
       do itype = 1, ntype
          do ipt = 1, npt
@@ -3999,39 +4001,39 @@ subroutine SFPBC2D(iStage)
       call DistFunc2DShow(1, txheading, nvar, var, uout)
       call DistFunc2DList(1, txheading, nvar, var, ulist)
 
-!      inquire (uuser, opened=connected)
-!      if (.not.connected) call FileOpen(uuser, fuser, 'form/noread')
-!      write(uuser,*) 'from SFPBC2D: SI_1 data'
-!      write(uuser,'(a1)') ' '
-!      do ibin=-nbin(2), nbin(2)
-!         do jbin=-nbin(1), nbin(1)
-!            if ((ibin == 0) .and. (jbin == 0)) then
-!               write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),Zero,Zero,Zero,Zero,Zero,Zero
-!            else
-!               write(uuser,'(8e13.4)') jbin*var(1)%bin(1), ibin*var(1)%bin(2),&
-!                var(1)%avs1(abs(jbin)-1,abs(ibin)-1), var(1)%avsd(abs(jbin)-1,abs(ibin)-1), &
-!                var(2)%avs1(abs(jbin)-1,abs(ibin)-1), var(2)%avsd(abs(jbin)-1,abs(ibin)-1), &
-!                var(3)%avs1(abs(jbin)-1,abs(ibin)-1), var(3)%avsd(abs(jbin)-1,abs(ibin)-1)
-!            End if
-!         end do
-!         write(uuser,'(a1)') ' '
-!      end do
-!
-!      write(uuser,*) 'from SFPBC2D: SI_2 data'
-!      write(uuser,'(a1)') ' '
-!      do ibin=-nbin(2), nbin(2)
-!         do jbin=-nbin(1), nbin(1)
-!            if ((ibin == 0) .and. (jbin == 0)) then
-!               write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),Zero,Zero,Zero,Zero,Zero,Zero
-!            else
-!               write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),&
-!                var(4)%avs1(abs(jbin)-1,abs(ibin)-1), var(4)%avsd(abs(jbin)-1,abs(ibin)-1), &
-!                var(5)%avs1(abs(jbin)-1,abs(ibin)-1), var(5)%avsd(abs(jbin)-1,abs(ibin)-1), &
-!                var(6)%avs1(abs(jbin)-1,abs(ibin)-1), var(6)%avsd(abs(jbin)-1,abs(ibin)-1)
-!            End if
-!         end do
-!         write(uuser,'(a1)') ' '
-!      end do
+      !      inquire (uuser, opened=connected)
+      !      if (.not.connected) call FileOpen(uuser, fuser, 'form/noread')
+      !      write(uuser,*) 'from SFPBC2D: SI_1 data'
+      !      write(uuser,'(a1)') ' '
+      !      do ibin=-nbin(2), nbin(2)
+      !         do jbin=-nbin(1), nbin(1)
+      !            if ((ibin == 0) .and. (jbin == 0)) then
+      !               write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),Zero,Zero,Zero,Zero,Zero,Zero
+      !            else
+      !               write(uuser,'(8e13.4)') jbin*var(1)%bin(1), ibin*var(1)%bin(2),&
+      !                var(1)%avs1(abs(jbin)-1,abs(ibin)-1), var(1)%avsd(abs(jbin)-1,abs(ibin)-1), &
+      !                var(2)%avs1(abs(jbin)-1,abs(ibin)-1), var(2)%avsd(abs(jbin)-1,abs(ibin)-1), &
+      !                var(3)%avs1(abs(jbin)-1,abs(ibin)-1), var(3)%avsd(abs(jbin)-1,abs(ibin)-1)
+      !            End if
+      !         end do
+      !         write(uuser,'(a1)') ' '
+      !      end do
+      !
+      !      write(uuser,*) 'from SFPBC2D: SI_2 data'
+      !      write(uuser,'(a1)') ' '
+      !      do ibin=-nbin(2), nbin(2)
+      !         do jbin=-nbin(1), nbin(1)
+      !            if ((ibin == 0) .and. (jbin == 0)) then
+      !               write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),Zero,Zero,Zero,Zero,Zero,Zero
+      !            else
+      !               write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),&
+      !                var(4)%avs1(abs(jbin)-1,abs(ibin)-1), var(4)%avsd(abs(jbin)-1,abs(ibin)-1), &
+      !                var(5)%avs1(abs(jbin)-1,abs(ibin)-1), var(5)%avsd(abs(jbin)-1,abs(ibin)-1), &
+      !                var(6)%avs1(abs(jbin)-1,abs(ibin)-1), var(6)%avsd(abs(jbin)-1,abs(ibin)-1)
+      !            End if
+      !         end do
+      !         write(uuser,'(a1)') ' '
+      !      end do
 
    end select
 
@@ -4101,7 +4103,7 @@ subroutine SFPBC2DNoAv(iStage)
       sfpar = 0.0E+00
       sfparsd = 0.0E+00
 
-! ... set nvar, ipnt, label, vlow, vupp, and nbin
+      ! ... set nvar, ipnt, label, vlow, vupp, and nbin
 
       nvar = 0
       do itype = 1, ntype/2
@@ -4205,12 +4207,12 @@ subroutine SFPBC2DNoAv(iStage)
                      do jbin = -1, nbin(1)-1
                         if (mod(itype,3) == 1) then
                            var(ivar)%avs2(jbin,ibin) = var(ivar)%avs2(jbin,ibin)+ &
-                                sum(real(eikrwff(jbin,ibin,dlow:dupp,ipt))*real(eikrwff(jbin,ibin,dlow:dupp,jpt)) &
-                             +aimag(eikrwff(jbin,ibin,dlow:dupp,ipt))*aimag(eikrwff(jbin,ibin,dlow:dupp,jpt)))
+                                 sum(real(eikrwff(jbin,ibin,dlow:dupp,ipt))*real(eikrwff(jbin,ibin,dlow:dupp,jpt)) &
+                                 +aimag(eikrwff(jbin,ibin,dlow:dupp,ipt))*aimag(eikrwff(jbin,ibin,dlow:dupp,jpt)))
                         else if (mod(itype,3) == 2) then
                            var(ivar)%avs2(jbin,ibin) = var(ivar)%avs2(jbin,ibin)+ &
-                                sum(real(eikr(jbin,ibin,dlow:dupp,ipt))*real(eikr(jbin,ibin,dlow:dupp,jpt)) &
-                                +aimag(eikr(jbin,ibin,dlow:dupp,ipt))*aimag(eikr(jbin,ibin,dlow:dupp,jpt)))
+                                 sum(real(eikr(jbin,ibin,dlow:dupp,ipt))*real(eikr(jbin,ibin,dlow:dupp,jpt)) &
+                                 +aimag(eikr(jbin,ibin,dlow:dupp,ipt))*aimag(eikr(jbin,ibin,dlow:dupp,jpt)))
                         else if (mod(itype,3) == 0) then
                            var(ivar)%avs2(jbin,ibin) = var(ivar)%avs2(jbin,ibin)+ sum(ffstore(jbin,ibin,dlow:dupp,ipt))
                         end if
@@ -4224,7 +4226,7 @@ subroutine SFPBC2DNoAv(iStage)
 
    case (iAfterMacrostep)
 
-! ... normalization
+      ! ... normalization
 
       do itype = 1, ntype
          do ipt = 1, npt
@@ -4245,7 +4247,7 @@ subroutine SFPBC2DNoAv(iStage)
 
       inquire (uuser, opened=connected)
       if (.not.connected) call FileOpen(uuser, fuser, 'form/noread')
-!     Open(unit=666,file='SI_1',status='unknown')
+      !     Open(unit=666,file='SI_1',status='unknown')
       write(uuser,*) 'from SFPBC2DNoAv: SI_1 data'
       write(uuser,'(a1)') ' '
       do ibin=-nbin(2), nbin(2)
@@ -4254,16 +4256,16 @@ subroutine SFPBC2DNoAv(iStage)
                write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),Zero,Zero,Zero,Zero,Zero,Zero
             else
                write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),&
-                  var(1)%avs1(abs(jbin)-1,abs(ibin)-1), var(1)%avsd(abs(jbin)-1,abs(ibin)-1), &
-                  var(2)%avs1(abs(jbin)-1,abs(ibin)-1), var(2)%avsd(abs(jbin)-1,abs(ibin)-1), &
-                  var(3)%avs1(abs(jbin)-1,abs(ibin)-1), var(3)%avsd(abs(jbin)-1,abs(ibin)-1)
-              End if
+                     var(1)%avs1(abs(jbin)-1,abs(ibin)-1), var(1)%avsd(abs(jbin)-1,abs(ibin)-1), &
+                     var(2)%avs1(abs(jbin)-1,abs(ibin)-1), var(2)%avsd(abs(jbin)-1,abs(ibin)-1), &
+                     var(3)%avs1(abs(jbin)-1,abs(ibin)-1), var(3)%avsd(abs(jbin)-1,abs(ibin)-1)
+            End if
          end do
          write(uuser,'(a1)') ' '
       end do
-!     Close(unit=666,status='keep')
+      !     Close(unit=666,status='keep')
 
-!     Open(unit=666,file='SI_2',status='unknown')
+      !     Open(unit=666,file='SI_2',status='unknown')
       write(uuser,*) 'from SFPBC2DNoAv: SI_2 data'
       write(uuser,'(a1)') ' '
       do ibin=-nbin(2), nbin(2)
@@ -4272,14 +4274,14 @@ subroutine SFPBC2DNoAv(iStage)
                write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),Zero,Zero,Zero,Zero,Zero,Zero
             else
                write(uuser,'(8e13.4)') jbin*var(4)%bin(1), ibin*var(4)%bin(2),&
-                  var(4)%avs1(abs(jbin)-1,abs(ibin)-1), var(4)%avsd(abs(jbin)-1,abs(ibin)-1), &
-                  var(5)%avs1(abs(jbin)-1,abs(ibin)-1), var(5)%avsd(abs(jbin)-1,abs(ibin)-1), &
-                  var(6)%avs1(abs(jbin)-1,abs(ibin)-1), var(6)%avsd(abs(jbin)-1,abs(ibin)-1)
-              End if
+                     var(4)%avs1(abs(jbin)-1,abs(ibin)-1), var(4)%avsd(abs(jbin)-1,abs(ibin)-1), &
+                     var(5)%avs1(abs(jbin)-1,abs(ibin)-1), var(5)%avsd(abs(jbin)-1,abs(ibin)-1), &
+                     var(6)%avs1(abs(jbin)-1,abs(ibin)-1), var(6)%avsd(abs(jbin)-1,abs(ibin)-1)
+            End if
          end do
          write(uuser,'(a1)') ' '
       end do
-!     Close(unit=666,status='keep')
+      !     Close(unit=666,status='keep')
 
    end select
 
@@ -4315,24 +4317,24 @@ subroutine PosMeanSph(iStage)
    select case (iStage)
    case (iWriteInput)
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
-     nvar = npt*ntype
-     allocate(var(nvar), ipnt(npt,ntype), rosum(3,npt))
-     ipnt = 0
-     rosum = 0.0E+00
+      nvar = npt*ntype
+      allocate(var(nvar), ipnt(npt,ntype), rosum(3,npt))
+      ipnt = 0
+      rosum = 0.0E+00
 
-! ... set ipnt, label, and norm
+      ! ... set ipnt, label, and norm
 
-     ivar = 0
-     do ipt = 1, npt
-        do itype = 1, ntype
-           ivar = ivar + 1
-           ipnt(ipt,itype) = ivar
-           var(ivar)%label = txpt(ipt)//' '//txtype(itype)
-           var(ivar)%norm = One/nppt(ipt)
-        end do
-     end do
+      ivar = 0
+      do ipt = 1, npt
+         do itype = 1, ntype
+            ivar = ivar + 1
+            ipnt(ipt,itype) = ivar
+            var(ivar)%label = txpt(ipt)//' '//txtype(itype)
+            var(ivar)%norm = One/nppt(ipt)
+         end do
+      end do
 
    case (iBeforeSimulation)
 
@@ -4352,8 +4354,8 @@ subroutine PosMeanSph(iStage)
       end do
       do ipt = 1, npt
          do itype = 1, 6
-             ivar = ipnt(ipt,itype)
-             var(ivar)%value = rosum(1+mod(itype-1,3),ipt)**(1+itype/4)
+            ivar = ipnt(ipt,itype)
+            var(ivar)%value = rosum(1+mod(itype-1,3),ipt)**(1+itype/4)
          end do
       end do
       call ScalarSample(iStage, 1, nvar, var)
@@ -4371,7 +4373,7 @@ subroutine PosMeanSph(iStage)
       call WriteHead(2, txheading, uout)
       call ScalarWrite(iStage, 1, nvar, var, 1, '(a,t35,4f15.5,f15.0)', uout)
 
-     deallocate(var, ipnt, rosum)
+      deallocate(var, ipnt, rosum)
 
    end select
 
@@ -4435,18 +4437,18 @@ subroutine MacroionOneSph(iStage)
 
    case (iWriteInput)
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%label = ['projection', '|idm|     ', 'idm_z     ']
       vtype%nvar = 1
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(1,ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -4478,7 +4480,7 @@ subroutine MacroionOneSph(iStage)
          idmm(1:3) = idmm(1:3)+zat(ipt)*r(1:3,ip)
       end do
 
-! ... sample type 1
+      ! ... sample type 1
 
       itype = 1
       if(vtype(itype)%l) then
@@ -4499,7 +4501,7 @@ subroutine MacroionOneSph(iStage)
          end do
       end if
 
-! ... sample type 2
+      ! ... sample type 2
 
       itype = 2
       if(vtype(itype)%l) then
@@ -4509,7 +4511,7 @@ subroutine MacroionOneSph(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 3
+      ! ... sample type 3
 
       itype = 3
       if(vtype(itype)%l) then
@@ -4586,8 +4588,8 @@ subroutine MacroionTwoCyl(iStage)
       vtype%min = [Zero, -cyllen/2, -Two, Zero, Zero, -One, -One, -One]
       vtype%max = [cyllen, cyllen/2, Two,  One,  One,  One,  One,  One]
       vtype%nbin = 100
-!     vtype(1:2)%nbin = 20*cyllen+0.5                             ! z10 etc
-!     vtype(1:2)%nbin = 0.5*cyllen+0.5                            ! 60-1 etc
+      !     vtype(1:2)%nbin = 20*cyllen+0.5                             ! z10 etc
+      !     vtype(1:2)%nbin = 0.5*cyllen+0.5                            ! 60-1 etc
       vtype%nbin = 100
       iptmacroion = 1                                             ! select particle type of macroions
 
@@ -4601,18 +4603,18 @@ subroutine MacroionTwoCyl(iStage)
 
    case (iWriteInput)
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%label = ['z-sep   ', 'z-mean  ', 'net ch 1', 'idm 1   ', 'idm 2   ', 'idm_z 1 ', 'idm_z 2 ', 'cosang  ']
       vtype%nvar = 1
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(1,ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -4649,7 +4651,7 @@ subroutine MacroionTwoCyl(iStage)
       idms(2) = sqrt(idmv(1,2)**2+idmv(2,2)**2+idmv(3,2)**2)                 ! magnetude of idm of z > volume
       cosang = sum(idmv(1:3,1)*idmv(1:3,2))/(idms(1)*idms(2))                ! cos(angle) of idm 1 and idm 2
 
-! ... sample type 1
+      ! ... sample type 1
 
       itype = 1
       if (vtype(itype)%l) then
@@ -4659,7 +4661,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 2
+      ! ... sample type 2
 
       itype = 2
       if (vtype(itype)%l) then
@@ -4669,7 +4671,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 3
+      ! ... sample type 3
 
       itype = 3
       if (vtype(itype)%l) then
@@ -4678,7 +4680,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 4
+      ! ... sample type 4
 
       itype = 4
       if (vtype(itype)%l) then
@@ -4687,7 +4689,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 5
+      ! ... sample type 5
 
       itype = 5
       if(vtype(itype)%l) then
@@ -4696,7 +4698,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 6
+      ! ... sample type 6
 
       itype = 6
       if(vtype(itype)%l) then
@@ -4705,7 +4707,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 7
+      ! ... sample type 7
 
       itype = 7
       if(vtype(itype)%l) then
@@ -4714,7 +4716,7 @@ subroutine MacroionTwoCyl(iStage)
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)+One
       end if
 
-! ... sample type 8
+      ! ... sample type 8
 
       itype = 8
       if(vtype(itype)%l) then
@@ -4801,7 +4803,7 @@ subroutine MeanElFieldZCyl(iStage)
       end do
 
       var_2%label = ['force(z) (from mean el field) at -z', 'force(z) (from mean el field) at +z']
-                                                      ! set var_2()%label
+      ! set var_2()%label
       dzcut = 0.1d0                                   ! cutoff between integration ponts and part
       zsamp(1:3) = [Zero, -cyllen/2, cyllen/2]        ! z-values of the integration ponts
 
@@ -4828,7 +4830,7 @@ subroutine MeanElFieldZCyl(iStage)
 
    case (iSimulationStep)
 
-! ... sample the electrical field at layer (1) z = 0, (2) z = -cyllen/2, (3) z = +cyllen/2
+      ! ... sample the electrical field at layer (1) z = 0, (2) z = -cyllen/2, (3) z = +cyllen/2
 
       isamp2 = isamp2 + 1
       do ipoint = 1, npoint
@@ -4839,7 +4841,7 @@ subroutine MeanElFieldZCyl(iStage)
                dy = ysamp(ipoint) - ro(2,ip)
                dz = zsamp(ilayer) - ro(3,ip)
                if (abs(dz) < dzcut) then                        ! to avoid singularities or near singularities
-     !            write(*,*) 'ipoint, ilayer, ip, dz', ipoint, ilayer, ip, dz
+                  !            write(*,*) 'ipoint, ilayer, ip, dz', ipoint, ilayer, ip, dz
                else
                   dr2 = dx**2 + dy**2 + dz**2
                   dr = sqrt(dr2)
@@ -4863,7 +4865,7 @@ subroutine MeanElFieldZCyl(iStage)
       norm = InvInt(isamp2)                                  ! square of the electrical field from the particles
       elfield2s2(1:3,1:nlayer,1:npoint) = elfield2s2(1:3,1:nlayer,1:npoint)*norm ! ... averaged over macrosteps
       integrand(1:nlayer,1:npoint) = &
-           Half*(elfield2s2(3,1:nlayer,1:npoint) - elfield2s2(1,1:nlayer,1:npoint) - elfield2s2(2,1:nlayer,1:npoint))
+            Half*(elfield2s2(3,1:nlayer,1:npoint) - elfield2s2(1,1:nlayer,1:npoint) - elfield2s2(2,1:nlayer,1:npoint))
       do ilayer = 1, nlayer
          mffelec(ilayer) = Pi*cylrad**2 * sum(integrand(ilayer,1:npoint)*wsamp(1:npoint))/FourPi
       end do
@@ -4874,7 +4876,7 @@ subroutine MeanElFieldZCyl(iStage)
       write(uout,'(a)') 'plane, point   x          y           w          elfield2s2(1:3)      integrand'
       write(uout,'(a)') '-----  -----   -          -           -          ---------------      ---------'
       write(uout,'(2i5,7f10.4)') ((ilayer,ipoint,xsamp(ipoint),ysamp(ipoint),wsamp(ipoint), &
-                 elfield2s2(1:3,ilayer,ipoint),integrand(ilayer,ipoint),ipoint = 1,npoint), ilayer = 1, nlayer)
+            elfield2s2(1:3,ilayer,ipoint),integrand(ilayer,ipoint),ipoint = 1,npoint), ilayer = 1, nlayer)
       write(uout,*)
       write(uout,'(a,3g15.5)') 'mean-field el stress (zz) (of the three layers) =', mffelec(1:nlayer)
       write(uout,'(a,g15.5)') (var_2(idir)%label//' =', dmffelec(idir), idir = 1, 2)
@@ -5081,7 +5083,7 @@ subroutine DomainIO(iStage)
 
       if (master) then
          write(70,'(2i8,8f12.3)') &
-         (idom, ipdom(idom), ro(1:3,ipdom(idom)), raddom(idom), gkdom(idom), dipdom(1:3,idom), idom = 1, ndom)
+               (idom, ipdom(idom), ro(1:3,ipdom(idom)), raddom(idom), gkdom(idom), dipdom(1:3,idom), idom = 1, ndom)
          write(71,'(f12.3,a,f12.3)') (raddom(idom), char(9), gkdom(idom), idom = 1, ndom)
          write(72,'(f12.3,a,f12.3)') raddom(1), char(9), gkdom(1)
          if (ndom > 3) write(73,'(i8,4(a,f12.3))') ndom, (char(9), gkdom(idom), idom = 1,  4)
@@ -5146,16 +5148,16 @@ subroutine CalcDomain
    end if
 
 #if defined (_PAR_)
-    gmax = Zero
-    rmax = Zero
+   gmax = Zero
+   rmax = Zero
 #endif
 
    ivar = 1
 
    do ip = ipmyid(1), ipmyid(2), max(1, np/npdomainsearch)
-!  do ip = ipmyid(1), ipmyid(2)
+      !  do ip = ipmyid(1), ipmyid(2)
 
-! ... calculate gk(r) for particle ip
+      ! ... calculate gk(r) for particle ip
 
       call DistFuncSample(iBeforeMacrostep, nvar, var)
       do jp = 1, np
@@ -5171,7 +5173,7 @@ subroutine CalcDomain
          var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin-1) + var(ivar)%avs2(ibin)
       end do
 
-! ... determine the maximum value of gk(r) and its location
+      ! ... determine the maximum value of gk(r) and its location
 
       if (txdomaindef == 'first_max') then   ! first maximum
          do ibin = 1, var(ivar)%nbin - 3              ! continue until three following values all are smaller
@@ -5205,14 +5207,14 @@ subroutine CalcDomain
    call par_allreduce_reals(rmax, vaux, np)
 #endif
 
-! ... eliminate those particles for which gmax < gkfac*gmax
+   ! ... eliminate those particles for which gmax < gkfac*gmax
 
    gmaxval = maxval(gmax(1:np))
    where (gmax(1:np) < gkfac*gmaxval(1)) gmax(1:np) = Zero
 
-! ... save domain properties
+   ! ... save domain properties
 
-  call CalcPartDipMom(vaux)
+   call CalcPartDipMom(vaux)
 
    idom = 0
    do i = 1, ndommax
@@ -5239,7 +5241,7 @@ subroutine CalcDomain
 
    deallocate(var)
 
- end subroutine CalcDomain
+end subroutine CalcDomain
 
 !************************************************************************
 !> \page moluser moluser.F90
@@ -5288,7 +5290,7 @@ subroutine DomainDominating(iStage)
 
    case (iSimulationStep)
 
-! ... sample gk(r) for the particle identifying the most dominating domain
+      ! ... sample gk(r) for the particle identifying the most dominating domain
 
       var%nsamp2 = var%nsamp2 + 1
       ivar = 1
@@ -5352,12 +5354,12 @@ subroutine DomainDistFunc(iStage)
 
    case (iWriteInput)
 
-! ... determine R_hig and G_hig for the histograms
+      ! ... determine R_hig and G_hig for the histograms
 
       R_hig = vtype(1)%max
       G_hig = GetG_hig()
 
-! ... initiate
+      ! ... initiate
 
       nvar = 5
       allocate(var(nvar))
@@ -5418,46 +5420,46 @@ subroutine DomainDistFunc(iStage)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-! ... return the value of GetG_hig (the values given here are based on previous simulations)
+   ! ... return the value of GetG_hig (the values given here are based on previous simulations)
 
-real(8) function GetG_hig()
-   real(8) :: dipmom
+   real(8) function GetG_hig()
+      real(8) :: dipmom
 
-!  dipmom = 0.5d0
-   dipmom = sqrt(dipa(1,1,1)**2+dipa(2,1,1)**2+dipa(3,1,1)**2)
+      !  dipmom = 0.5d0
+      dipmom = sqrt(dipa(1,1,1)**2+dipa(2,1,1)**2+dipa(3,1,1)**2)
 
-   if (lewald) then
-      if (dipmom < 0.11) then
-         GetG_hig = 100.0
-      else if ((0.11 < dipmom) .and. (dipmom < 0.24)) then
-         GetG_hig = 200.0
-      else
-         GetG_hig = 1000.0
-      endif
-   else ! (MI in mind)
-      if (dipmom < 0.11) then
-         GetG_hig = 100.0
-      else if ((0.11 < dipmom) .and. (dipmom < 0.24)) then
-         if (np == 1000) GetG_hig = 100.0
-         if (np == 3000) GetG_hig = 200.0
-         if (np == 10000) GetG_hig = 300.0
-         if (np == 30000) GetG_hig = 500.0
-         if (np == 100000) GetG_hig = 800.0
-         if (np == 300000) GetG_hig = 1000.0
-      else
-         if (np == 1000) GetG_hig = 100.0
-         if (np == 3000) GetG_hig = 300.0
-         if (np == 10000) GetG_hig = 1000.0
-         if (np == 30000) GetG_hig = 3000.0
-         if (np == 100000) GetG_hig = 5000.0
-         if (np == 300000) GetG_hig = 10000.0
+      if (lewald) then
+         if (dipmom < 0.11) then
+            GetG_hig = 100.0
+         else if ((0.11 < dipmom) .and. (dipmom < 0.24)) then
+            GetG_hig = 200.0
+         else
+            GetG_hig = 1000.0
+         endif
+      else ! (MI in mind)
+         if (dipmom < 0.11) then
+            GetG_hig = 100.0
+         else if ((0.11 < dipmom) .and. (dipmom < 0.24)) then
+            if (np == 1000) GetG_hig = 100.0
+            if (np == 3000) GetG_hig = 200.0
+            if (np == 10000) GetG_hig = 300.0
+            if (np == 30000) GetG_hig = 500.0
+            if (np == 100000) GetG_hig = 800.0
+            if (np == 300000) GetG_hig = 1000.0
+         else
+            if (np == 1000) GetG_hig = 100.0
+            if (np == 3000) GetG_hig = 300.0
+            if (np == 10000) GetG_hig = 1000.0
+            if (np == 30000) GetG_hig = 3000.0
+            if (np == 100000) GetG_hig = 5000.0
+            if (np == 300000) GetG_hig = 10000.0
+         end if
       end if
-   end if
-end function GetG_hig
+   end function GetG_hig
 
-!........................................................................
+   !........................................................................
 
 end subroutine DomainDistFunc
 
@@ -5611,7 +5613,7 @@ subroutine TCFDipDomain(iStage)
       its = its + 1
       iti = iti + 1
 
-! ... calculate the dipole moments of the domains at iti = 0
+      ! ... calculate the dipole moments of the domains at iti = 0
 
       call CalcPartDipMom(vaux)
 
@@ -5641,14 +5643,14 @@ subroutine TCFDipDomain(iStage)
 
    case (iAfterSimulation)
 
-! ... divide by norm
+      ! ... divide by norm
 
       do ivar = 1, nvar
          anorm = InvInt(norm(ivar))
          c(ivar,0:nti) = anorm*c(ivar,0:nti)
       end do
 
-! ... normalize
+      ! ... normalize
 
       do ivar = 1, nvar
          c0(ivar) = c(ivar,0)
@@ -5677,9 +5679,9 @@ subroutine TCFDipDomain(iStage)
             write(ulist,'(i3)') ivar
             write(ulist,'(i3)') nti+1
             do iti = 0, nti
-                                  ! assumes that tstep*istatic = 0.1
+               ! assumes that tstep*istatic = 0.1
                write(ulist,'(f12.4,a,f12.4,a,f12.4)') float(iti)*0.1, char(9), c(ivar,iti), char(9), Zero
- !             write(ulist,'(f12.4,a,f12.4,a,f12.4)') float(iti)*One, char(9), c(ivar,iti), char(9), Zero   ! Jocke
+               !             write(ulist,'(f12.4,a,f12.4,a,f12.4)') float(iti)*One, char(9), c(ivar,iti), char(9), Zero   ! Jocke
             end do
          end do
       end if
@@ -5690,38 +5692,38 @@ subroutine TCFDipDomain(iStage)
 
 contains
 
-!........................................................................
+   !........................................................................
 
-subroutine Initialize
-   ndom0 = ndom
-   ipdom0(1:ndom) = ipdom(1:ndom)
-   raddom0(1:ndom) = raddom(1:ndom)
-   dipdom0(1:3,1:ndom) = dipdom(1:3,1:ndom)
-   ctemp = Zero
-   dipdomt(1:3,1:ndom0) = dipdom0(1:3,1:ndom0)
-end subroutine Initialize
+   subroutine Initialize
+      ndom0 = ndom
+      ipdom0(1:ndom) = ipdom(1:ndom)
+      raddom0(1:ndom) = raddom(1:ndom)
+      dipdom0(1:3,1:ndom) = dipdom(1:3,1:ndom)
+      ctemp = Zero
+      dipdomt(1:3,1:ndom0) = dipdom0(1:3,1:ndom0)
+   end subroutine Initialize
 
-subroutine Accumulate
-   integer(4) :: idom
-   character(40), parameter :: txroutine ='Accumuate'
-   if ((iti < 0) .or. (iti > nti)) call Stop(txroutine, 'error in iti', uout)
-   do idom = 1, ndom0
-      ctemp(idom,iti) = ctemp(idom,iti) + sum(dipdom0(1:3,idom)*dipdomt(1:3,idom))
-   end do
-end subroutine Accumulate
+   subroutine Accumulate
+      integer(4) :: idom
+      character(40), parameter :: txroutine ='Accumuate'
+      if ((iti < 0) .or. (iti > nti)) call Stop(txroutine, 'error in iti', uout)
+      do idom = 1, ndom0
+         ctemp(idom,iti) = ctemp(idom,iti) + sum(dipdom0(1:3,idom)*dipdomt(1:3,idom))
+      end do
+   end subroutine Accumulate
 
-subroutine Accumulate2
-   integer(4) :: ivar, idom
-   do idom = 1, ndom0
-      ivar = One + (raddom0(idom)-rlow)*dri
-      if (ivar >= 1 .and. ivar <= nvar) then
-         norm(ivar) = norm(ivar) + 1
-         c(ivar,0:nti) = c(ivar,0:nti) + ctemp(idom,0:nti)
-      end if
-   end do
-end subroutine Accumulate2
+   subroutine Accumulate2
+      integer(4) :: ivar, idom
+      do idom = 1, ndom0
+         ivar = One + (raddom0(idom)-rlow)*dri
+         if (ivar >= 1 .and. ivar <= nvar) then
+            norm(ivar) = norm(ivar) + 1
+            c(ivar,0:nti) = c(ivar,0:nti) + ctemp(idom,0:nti)
+         end if
+      end do
+   end subroutine Accumulate2
 
-!........................................................................
+   !........................................................................
 
 end subroutine TCFDipDomain
 
@@ -5791,18 +5793,18 @@ subroutine SCDF(iStage)
 
    case (iWriteInput)
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%label = ['zden ','zden2','rg   ','rg_xy','rg_z ']
       vtype%nvar = nct
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(nctct,ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -5838,7 +5840,7 @@ subroutine SCDF(iStage)
          call UndoPBCChain(ro(1,ipnsegcn(1,ic)), ic, 1, vaux)
          call CalcChainProperty(ic, vaux, ChainProperty)
 
-   ! ... summation of type 1
+         ! ... summation of type 1
 
          itype = 1
          if(vtype(itype)%l) then
@@ -5849,7 +5851,7 @@ subroutine SCDF(iStage)
             var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
          end if
 
-   ! ... summation of type 2
+         ! ... summation of type 2
 
          itype = 2
          if(vtype(itype)%l) then
@@ -5860,7 +5862,7 @@ subroutine SCDF(iStage)
             var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
          end if
 
-   ! ... summation of type 3
+         ! ... summation of type 3
 
          itype = 3
          if(vtype(itype)%l) then
@@ -5869,7 +5871,7 @@ subroutine SCDF(iStage)
             var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + sqrt(ChainProperty%rg2)
          end if
 
-   ! ... summation of type 4
+         ! ... summation of type 4
 
          itype = 4
          if(vtype(itype)%l) then
@@ -5878,7 +5880,7 @@ subroutine SCDF(iStage)
             var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + sqrt(ChainProperty%rg2xy)
          end if
 
-   ! ... summation of type 5
+         ! ... summation of type 5
 
          itype = 5
          if(vtype(itype)%l) then
@@ -5993,18 +5995,18 @@ subroutine AdsRadGyr(iStage)
          ladsseg = .false.
       end if
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%label = ['rg A   ','rg_z A ','rg_xy A','rg F   ','rg_z F ','rg_xy F']
       vtype%nvar = nct
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(nct,ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -6162,32 +6164,32 @@ subroutine AdsBondOrder(iStage)
 
    case (iWriteInput)
 
-   if (.not.allocated(ladschain)) then
-      allocate(ladschain(nc), ladsseg(maxval(npct(1:nct))))
-      ladschain = .false.
-      ladsseg = .false.
-   end if
-   if (.not.allocated(bondorder)) then
-      allocate(bondorder(mnbond), bondlist(2,mnbond), nq(mnbond), rdir(3,mnbond), rc(3,mnbond), q(6,mnbond))
-      bondorder = 0.0E+00
-      bondlist = 0
-      nq = 0
-      rdir = 0.0E+00
-      rc = 0.0E+00
-      q = 0.0E+00
-   end if
+      if (.not.allocated(ladschain)) then
+         allocate(ladschain(nc), ladsseg(maxval(npct(1:nct))))
+         ladschain = .false.
+         ladsseg = .false.
+      end if
+      if (.not.allocated(bondorder)) then
+         allocate(bondorder(mnbond), bondlist(2,mnbond), nq(mnbond), rdir(3,mnbond), rc(3,mnbond), q(6,mnbond))
+         bondorder = 0.0E+00
+         bondlist = 0
+         nq = 0
+         rdir = 0.0E+00
+         rc = 0.0E+00
+         q = 0.0E+00
+      end if
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%nvar = nct
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(nct,ntype), var_s(nvar))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -6302,11 +6304,11 @@ subroutine AdsPropDyn(iStage)
    integer(4)   , parameter :: unit = 30
    real(8)      , parameter :: ScaleTime = 1.0d-3
    character(8) , parameter :: txtype(ntype) = ['time    ', 'Nads_p  ', 'Nads_seg', &
-                                                'r_g     ', 'r_gxy   ', 'r_gz    ', &
-                                                'n_loop  ', 'n_tail  ', 'n_train ', &
-                                                'l_loop  ', 'l_tail  ', 'l_train ', &
-                                                'ns_loop ', 'ns_tail ', 'ns_train', &
-                                                'b.o._10 ', 'b.o._20 ', 'b.o._50 ']
+         'r_g     ', 'r_gxy   ', 'r_gz    ', &
+         'n_loop  ', 'n_tail  ', 'n_train ', &
+         'l_loop  ', 'l_tail  ', 'l_train ', &
+         'ns_loop ', 'ns_tail ', 'ns_train', &
+         'b.o._10 ', 'b.o._20 ', 'b.o._50 ']
    type(adscond_var),    save :: adscond
    real(8), allocatable, save :: var(:,:)             ! summation array of the variables
    integer(4)          , save :: nvar                 ! number of variables
@@ -6484,8 +6486,8 @@ subroutine CalcAvBondOrder(ictbond, ladschain, radius, avbondorder)
    avbondorder = Zero
    do ib = 1, nbond
       if (bondorder(ib)  > Zero) then
-        ibsum = ibsum + 1
-        avbondorder = avbondorder + bondorder(ib)
+         ibsum = ibsum + 1
+         avbondorder = avbondorder + bondorder(ib)
       end if
    end do
    if (ibsum > 0) avbondorder = avbondorder/ibsum
@@ -6518,28 +6520,28 @@ subroutine CalcBondOrder(ictbond, ladschain, radius, nbond, mnbond, bondorder, b
    integer(4) :: ic, ict, iseg, ip, jp, ib, jb, nrot
    real(8)    :: norm, dx, dy, dz, r2, qq(3,3), diagonal(3), eivr(3,3)
 
-! ... make bondlist of adsorbed chains
+   ! ... make bondlist of adsorbed chains
 
-      nbond = 0
-      do ic = 1, nc
-         if (ladschain(ic)) then
-            ict = ictcn(ic)
-            do iseg = 1, npct(ict)-1
-               ip = ipnsegcn(iseg,ic)
-               jp = ipnsegcn(iseg+1,ic)
-               nbond = nbond+1
-               if (nbond > mnbond) call Stop(txroutine, 'nbond > mnbond', 6)
-               bondlist(1,nbond) = ip
-               bondlist(2,nbond) = jp
-            end do
-         end if
-      end do
-      if (itestloc == 1) then
-         write(*,*) 'bondlist'
-         write(*,'((2i10))') (bondlist(1:2,ib),ib=1,nbond)
+   nbond = 0
+   do ic = 1, nc
+      if (ladschain(ic)) then
+         ict = ictcn(ic)
+         do iseg = 1, npct(ict)-1
+            ip = ipnsegcn(iseg,ic)
+            jp = ipnsegcn(iseg+1,ic)
+            nbond = nbond+1
+            if (nbond > mnbond) call Stop(txroutine, 'nbond > mnbond', 6)
+            bondlist(1,nbond) = ip
+            bondlist(2,nbond) = jp
+         end do
       end if
+   end do
+   if (itestloc == 1) then
+      write(*,*) 'bondlist'
+      write(*,'((2i10))') (bondlist(1:2,ib),ib=1,nbond)
+   end if
 
-! ... calculate bond direction and location of bonds of particles that belongs to adsorbed chains
+   ! ... calculate bond direction and location of bonds of particles that belongs to adsorbed chains
 
    do ib = 1, nbond
       ip = bondlist(1,ib)
@@ -6558,7 +6560,7 @@ subroutine CalcBondOrder(ictbond, ladschain, radius, nbond, mnbond, bondorder, b
       write(*,'((i5, 3f10.3,4x,3f10.3))') (ib, rc(1:3,ib), rdir(1:3,ib), ib = 1, nbond)
    end if
 
-! ... calculate bond alingment tensor
+   ! ... calculate bond alingment tensor
 
    q(1:6,1:nbond) = zero
    nq(1:nbond) = 0
@@ -6566,7 +6568,7 @@ subroutine CalcBondOrder(ictbond, ladschain, radius, nbond, mnbond, bondorder, b
       ip = bondlist(1,ib)
       do jb = ib, nbond
          jp = bondlist(1,jb)
-!        if (icnpn(ip) == icnpn(jp)) cycle                  ! exclude bonds in same chain
+         !        if (icnpn(ip) == icnpn(jp)) cycle                  ! exclude bonds in same chain
          dx = rc(1,ib) - rc(1,jb)
          dy = rc(2,ib) - rc(2,jb)
          dz = rc(3,ib) - rc(3,jb)
@@ -6597,7 +6599,7 @@ subroutine CalcBondOrder(ictbond, ladschain, radius, nbond, mnbond, bondorder, b
    end do
    if (itestloc == 1) write(*,'((a,i4,6f8.3))') ('nq, q',nq(ib),q(1:6,ib),ib=1,nbond)
 
-! ... diagolalize and collect the largest eigenvalue
+   ! ... diagolalize and collect the largest eigenvalue
 
    do ib = 1, nbond
       bondorder(ib) = Zero
@@ -6715,8 +6717,8 @@ subroutine AdsEventDyn(iStage)
       if (lsim .and. master .and. txstart == 'continue') then
          read(ucnf) (ladschainold(ic), nAdsEvent(ic), AdsStart(1:nadsEvent(ic),ic), AdsLength(1:nAdsEvent(ic),ic), ic = 1, nc)
          do ic = 1, nc
-         call CheckAdsChainSeg(ic, adscond, ladschain, ladsseg)
-         if (ladschain) ladschainold(ic) = .true.
+            call CheckAdsChainSeg(ic, adscond, ladschain, ladsseg)
+            if (ladschain) ladschainold(ic) = .true.
          end do
       end if
 
@@ -6740,7 +6742,7 @@ subroutine AdsEventDyn(iStage)
             if (.not.ladschain .and. ladschainold(ic)) then                    ! desorbING chain
                ladschainold(ic) = .false.
                if (nAdsEvent(ic) <= mnadsevent) &                         ! prepare data to be written on uuser
-               AdsLength(nAdsEvent(ic),ic) = MomTime - AdsStart(nAdsEvent(ic),ic)
+                     AdsLength(nAdsEvent(ic),ic) = MomTime - AdsStart(nAdsEvent(ic),ic)
             end if
          end do
          isum = 0
@@ -6752,21 +6754,21 @@ subroutine AdsEventDyn(iStage)
 
    case (iAfterSimulation)
 
-! ... add contribution from chains adsorbed at the end of the simulation
+      ! ... add contribution from chains adsorbed at the end of the simulation
 
       MomTime = ScaleTime*GetTime()
       do ic = 1, nc
          call CheckAdsChainSeg(ic, adscond, ladschain, ladsseg)
          if (ladschain) then
-             if(nAdsEvent(ic) > 0) then
-                AdsLength(nAdsEvent(ic),ic) = MomTime - AdsStart(nAdsEvent(ic),ic)   ! prepare data to be written on uuser
-             else
-                call warn('txroutine', 'soft exception appeard; nAdsEvent(ic) < 1', uout)
-             end if
+            if(nAdsEvent(ic) > 0) then
+               AdsLength(nAdsEvent(ic),ic) = MomTime - AdsStart(nAdsEvent(ic),ic)   ! prepare data to be written on uuser
+            else
+               call warn('txroutine', 'soft exception appeard; nAdsEvent(ic) < 1', uout)
+            end if
          end if
       end do
 
-! ... write data on uuser
+      ! ... write data on uuser
 
       call FileOpen(uuser, fuser, 'form/noread')
       write(uuser,'(a,i8)') 'nct =',nct
@@ -6779,12 +6781,12 @@ subroutine AdsEventDyn(iStage)
          icnupp = icnlow + ncct(ict)-1
          do ic = icnlow, icnupp
             write(uuser,'(3i10,5x,1002f9.3)') &
-            ict, ic, nAdsEvent(ic), sum(AdsLength(1:nAdsEvent(ic),ic)), (AdsStart(i,ic), AdsLength(i,ic), i = 1, nAdsEvent(ic))
+                  ict, ic, nAdsEvent(ic), sum(AdsLength(1:nAdsEvent(ic),ic)), (AdsStart(i,ic), AdsLength(i,ic), i = 1, nAdsEvent(ic))
          end do
       end do
       close(uuser)
 
-! ... calculate residence time
+      ! ... calculate residence time
 
       do ict = 1, nct
          icnlow = icnct(ict)
@@ -6895,81 +6897,81 @@ subroutine AdsExam1
 
 contains
 
-!........................................................................
+   !........................................................................
 
-subroutine sort                                ! sort in ascending AdsStart(1,i)
-   integer(4), allocatable :: index(:)
-   integer(4) :: i, ict, ic, ilow, ioff, idx
+   subroutine sort                                ! sort in ascending AdsStart(1,i)
+      integer(4), allocatable :: index(:)
+      integer(4) :: i, ict, ic, ilow, ioff, idx
 
-   allocate(IdtSave(nc), IdSave(nc), nAdsEventSave(nc), AdsStartSave(mnAdsEvent,nc), AdsLengthSave(mnAdsEvent,nc))
-   IdtSave = 0
-   IdSave = 0
-   nAdsEventSave = 0
-   AdsStartSave = 0.0E+00
-   AdsLengthSave = 0.0E+00
-   allocate(index(nc))
-   index = 0
+      allocate(IdtSave(nc), IdSave(nc), nAdsEventSave(nc), AdsStartSave(mnAdsEvent,nc), AdsLengthSave(mnAdsEvent,nc))
+      IdtSave = 0
+      IdSave = 0
+      nAdsEventSave = 0
+      AdsStartSave = 0.0E+00
+      AdsLengthSave = 0.0E+00
+      allocate(index(nc))
+      index = 0
 
-   do i = 1, nc
-      IdtSave(i) = Idt(i)
-      IdSave(i) = Id(i)
-      nAdsEventSave(i) = nAdsEvent(i)
-      AdsStartSave(i,1) = Zero                 ! zero is assigned to chains never adsorbed
-      AdsStartSave(i,1:nAdsEvent(i)) = AdsStart(1:nAdsEvent(i),i)
-      AdsLengthSave(i,1:nAdsEvent(i)) = AdsLength(1:nAdsEvent(i),i)
-   end do
-   ilow = 1
-   do ict = 1, nct
-      call HeapSortIndex(ncct(ict), AdsStartSave(ilow,1), index(ilow))
-      ilow = ilow + ncct(ict)
-   end do
-   i = 0
-   ioff = 0
-   do ict = 1, nct
-      do ic = 1, ncct(ict)
-         i = i + 1
-         idx = ioff + index(ioff+ic)
-         Idt(i) = IdtSave(idx)
-         Id(i) = IdSave(idx)
-         nAdsEvent(i) = nAdsEventSave(idx)
-         AdsStart(1:nAdsEvent(i),i) = AdsStartSave(idx,1:nAdsEventSave(idx))
-         AdsLength(1:nAdsEvent(i),i) = AdsLengthSave(idx,1:nAdsEventSave(idx))
+      do i = 1, nc
+         IdtSave(i) = Idt(i)
+         IdSave(i) = Id(i)
+         nAdsEventSave(i) = nAdsEvent(i)
+         AdsStartSave(i,1) = Zero                 ! zero is assigned to chains never adsorbed
+         AdsStartSave(i,1:nAdsEvent(i)) = AdsStart(1:nAdsEvent(i),i)
+         AdsLengthSave(i,1:nAdsEvent(i)) = AdsLength(1:nAdsEvent(i),i)
       end do
-      ioff = ioff + ncct(ict)
-   end do
-   deallocate(IdtSave, IdSave, nAdsEventSave, AdsStartSave, AdsLengthSave)
-   deallocate(index)
-end subroutine sort
+      ilow = 1
+      do ict = 1, nct
+         call HeapSortIndex(ncct(ict), AdsStartSave(ilow,1), index(ilow))
+         ilow = ilow + ncct(ict)
+      end do
+      i = 0
+      ioff = 0
+      do ict = 1, nct
+         do ic = 1, ncct(ict)
+            i = i + 1
+            idx = ioff + index(ioff+ic)
+            Idt(i) = IdtSave(idx)
+            Id(i) = IdSave(idx)
+            nAdsEvent(i) = nAdsEventSave(idx)
+            AdsStart(1:nAdsEvent(i),i) = AdsStartSave(idx,1:nAdsEventSave(idx))
+            AdsLength(1:nAdsEvent(i),i) = AdsLengthSave(idx,1:nAdsEventSave(idx))
+         end do
+         ioff = ioff + ncct(ict)
+      end do
+      deallocate(IdtSave, IdSave, nAdsEventSave, AdsStartSave, AdsLengthSave)
+      deallocate(index)
+   end subroutine sort
 
-!........................................................................
+   !........................................................................
 
-subroutine PrepCurvz                     ! generate input file to Curvz
-   real(8),      parameter :: Zero = 0.0d0
-   character(1), parameter :: tab = char(9)
-   integer(4) ::  i, j, ic
-   open(20,file = 'chainadsevent.curvz.txt')
-   ic = 0
-   do i = 1, nc
-      if (nAdsEvent(i) > 0) then         ! write only chains that have been adsorbed
-         ic = ic + 1                     ! order adsorbed chains from 1
-         write(20,'(a)') '%%%%%%%%%%%%'
-         write(20,'(f8.3,a,f8.1)') Zero, tab, Zero
-         write(20,'(f8.3,a,f8.1)') AdsStart(1,i), tab, Zero
-         do j = 1, nAdsEvent(i)-1
+   subroutine PrepCurvz                     ! generate input file to Curvz
+      real(8),      parameter :: Zero = 0.0d0
+      character(1), parameter :: tab = char(9)
+      integer(4) ::  i, j, ic
+      open(20,file = 'chainadsevent.curvz.txt')
+      ic = 0
+      do i = 1, nc
+         if (nAdsEvent(i) > 0) then         ! write only chains that have been adsorbed
+            ic = ic + 1                     ! order adsorbed chains from 1
+            write(20,'(a)') '%%%%%%%%%%%%'
+            write(20,'(f8.3,a,f8.1)') Zero, tab, Zero
+            write(20,'(f8.3,a,f8.1)') AdsStart(1,i), tab, Zero
+            do j = 1, nAdsEvent(i)-1
+               write(20,'(f8.3,a,i8)') AdsStart(j,i), tab, ic
+               write(20,'(f8.3,a,i8)') AdsStart(j,i)+AdsLength(j,i), tab, ic
+               write(20,'(f8.3,a,f8.1)') AdsStart(j,i)+AdsLength(j,i), tab, Zero
+               write(20,'(f8.3,a,f8.1)') AdsStart(j+1,i), tab, Zero
+            end do
             write(20,'(f8.3,a,i8)') AdsStart(j,i), tab, ic
             write(20,'(f8.3,a,i8)') AdsStart(j,i)+AdsLength(j,i), tab, ic
-            write(20,'(f8.3,a,f8.1)') AdsStart(j,i)+AdsLength(j,i), tab, Zero
-            write(20,'(f8.3,a,f8.1)') AdsStart(j+1,i), tab, Zero
-         end do
-         write(20,'(f8.3,a,i8)') AdsStart(j,i), tab, ic
-         write(20,'(f8.3,a,i8)') AdsStart(j,i)+AdsLength(j,i), tab, ic
-         write(20,'(a)') '%%%%%%%%%%%%'
-      end if
-   end do
-   close(20)
-end subroutine PrepCurvz
+            write(20,'(a)') '%%%%%%%%%%%%'
+         end if
+      end do
+      close(20)
+   end subroutine PrepCurvz
 
-!........................................................................
+   !........................................................................
 
 end subroutine AdsExam1
 
@@ -7033,7 +7035,7 @@ subroutine AdsExam2
 
    var%nsamp2 = var%nsamp2+1
 
-! ... sampling of type 1
+   ! ... sampling of type 1
 
    itype = 1
    do ic = 1, nc
@@ -7045,7 +7047,7 @@ subroutine AdsExam2
       end do
    end do
 
-! ... sampling of type 2
+   ! ... sampling of type 2
 
    itype = 2
    do ic = 1, nc
@@ -7057,7 +7059,7 @@ subroutine AdsExam2
       end do
    end do
 
-! ... sampling of type 3
+   ! ... sampling of type 3
 
    itype = 3
    do ict = 1, nct
@@ -7070,7 +7072,7 @@ subroutine AdsExam2
       end do
    end do
 
-! ... normalize to the number of adsorbing and desorpbing items per unit time
+   ! ... normalize to the number of adsorbing and desorpbing items per unit time
 
    do itype = 1, 2
       do ict = 1, nct
@@ -7155,7 +7157,7 @@ subroutine AdsExam3
 
    var%nsamp2 = var%nsamp2+1
 
-! ... sampling of itype = 1
+   ! ... sampling of itype = 1
 
    itype = 1
    if (ltype(itype)) then
@@ -7170,7 +7172,7 @@ subroutine AdsExam3
       end do
    end if
 
-! ... sampling of itype = 2
+   ! ... sampling of itype = 2
 
    itype = 2
    if (ltype(itype)) then
@@ -7187,7 +7189,7 @@ subroutine AdsExam3
       end do
    end if
 
-! ... sampling of itype = 3
+   ! ... sampling of itype = 3
 
    itype = 3
    if (ltype(itype)) then
@@ -7204,7 +7206,7 @@ subroutine AdsExam3
       end do
    end if
 
-! ... sampling of itype = 4
+   ! ... sampling of itype = 4
 
    itype = 4
    if (ltype(itype)) then
@@ -7362,7 +7364,7 @@ subroutine ReadPrimAdsData
       read(uuser,*,end=999) Idt(ic), Id(ic), nAdsEvent(ic), dum, (AdsStart(j,ic),AdsLength(j,ic), j = 1, nAdsEvent(ic))
       ncct(idt(ic)) = ncct(idt(ic)) + 1
    end do
- 999 continue
+999 continue
    if (maxval(nadsEvent(1:nc)) > mnAdsEvent) call Stop(txroutine, 'maxval(nAdsEvent(1:nc) > mnAdsEvent', uout)
 
    write(uout,'(a,t40,a    )') 'primary adsorption data read from FUSER'
@@ -7394,7 +7396,7 @@ subroutine WritePrimAdsData(txheading)
    write(uout,'(8(a,2x))') '--------', '----------', '--------', '----------', '--------------', '---------', '----------', '---'
    do i = 1, nc
       write(uout,'(4(i8,2x),5x,400f9.3)') &
-      i, Idt(i), Id(i), nAdsEvent(i), sum(AdsLength(1:nAdsEvent(i),i)), (AdsStart(j,i), AdsLength(j,i), j = 1, max(0,nAdsEvent(i)))
+            i, Idt(i), Id(i), nAdsEvent(i), sum(AdsLength(1:nAdsEvent(i),i)), (AdsStart(j,i), AdsLength(j,i), j = 1, max(0,nAdsEvent(i)))
    end do
 
 end subroutine WritePrimAdsData
@@ -7434,23 +7436,23 @@ subroutine Z_DF_Slit(iStage)
       iptz1 = 1
       iptz2 = 2
 
-      if ((txbc /= 'xy') .and. (lewald2dlc /= .true.)) call Stop (txroutine,'txbc /= ''xy'' and ewald2dlc = .false.',uout)
+      if ((txbc /= 'xy') .and. (lewald2dlc .neqv. .true.)) call Stop (txroutine,'txbc /= ''xy'' and ewald2dlc = .false.',uout)
       if (maxval(vtype%nbin) > mnbin_df) call Stop(txroutine, 'vtype%nbin > mnbin_df', uout)
 
    case (iWriteInput)
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%label = ['atom of p1', 'atom of p2','a1 of p1  ']
       vtype%nvar = 1
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -7478,7 +7480,7 @@ subroutine Z_DF_Slit(iStage)
 
       var%nsamp2 = var%nsamp2+1
 
-   ! ... summation of type 1
+      ! ... summation of type 1
 
       itype = 1
       if(vtype(itype)%l) then
@@ -7491,7 +7493,7 @@ subroutine Z_DF_Slit(iStage)
          end do
       end if
 
-   ! ... summation of type 2
+      ! ... summation of type 2
 
       itype = 2
       if(vtype(itype)%l) then
@@ -7504,7 +7506,7 @@ subroutine Z_DF_Slit(iStage)
          end do
       end if
 
-   ! ... summation of type 3
+      ! ... summation of type 3
 
       itype = 3
       if(vtype(itype)%l) then
@@ -7558,7 +7560,7 @@ subroutine ElMom(iStage)
    integer(4) :: nrot
    real(8) :: qr(3), qrr(3,3), diagonal(3), eivr(3,3)
 
-!  namelist /nmlElMom/ xxxx
+   !  namelist /nmlElMom/ xxxx
 
    if (slave) return
 
@@ -7566,17 +7568,17 @@ subroutine ElMom(iStage)
 
    select case (iStage)
    case (iReadInput)
-!     rewind(uin)
-!     read(uin,nmlScalarDemo)
+      !     rewind(uin)
+      !     read(uin,nmlScalarDemo)
 
    case (iWriteInput)
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = 5
       allocate(var(nvar))
 
-! ... set label
+      ! ... set label
 
       var(1)%label = 'net charge                      = '
       var(2)%label = 'dipole moment (com)             = '
@@ -7598,15 +7600,15 @@ subroutine ElMom(iStage)
 
    case (iSimulationStep)
 
-!      do ia = 1, na
-!         write(*,'(l5,f8.3,2x,3f8.3)') laz(ia), az(ia), (r(m,ia)-ro(m,1), m = 1,3)
-!      end do
+      !      do ia = 1, na
+      !         write(*,'(l5,f8.3,2x,3f8.3)') laz(ia), az(ia), (r(m,ia)-ro(m,1), m = 1,3)
+      !      end do
       var(1)%value = sum(az,1,laz)
       qr(1) = sum(az(:)*(r(1,:)-ro(1,1)), 1, laz(:))
       qr(2) = sum(az(:)*(r(2,:)-ro(2,1)), 1, laz(:))
       qr(3) = sum(az(:)*(r(3,:)-ro(3,1)), 1, laz(:))
-!      call writevec(3,qr,'qr',1,3,1,6)
-!      call CarToSph('deg',qr(1),qr(2),qr(3),rr,theta,phi)
+      !      call writevec(3,qr,'qr',1,3,1,6)
+      !      call CarToSph('deg',qr(1),qr(2),qr(3),rr,theta,phi)
       var(2)%value = sqrt(sum(qr(:)**2))
       qrr(1,1) = sum(az(:)*(r(1,:)-ro(1,1))**2, 1, laz(:))
       qrr(2,2) = sum(az(:)*(r(2,:)-ro(2,1))**2, 1, laz(:))
@@ -7617,17 +7619,17 @@ subroutine ElMom(iStage)
       qrr(2,1) = qrr(1,2)
       qrr(3,1) = qrr(1,3)
       qrr(3,2) = qrr(1,2)
-!      call writemat(3,3,qrr,'qrr',1,3,1,1,3,1,6)
+      !      call writemat(3,3,qrr,'qrr',1,3,1,1,3,1,6)
       call Diag(3, qrr, diagonal, eivr, nrot)
-!      call writevec(3,diagonal,'diag',1,3,1,6)
+      !      call writevec(3,diagonal,'diag',1,3,1,6)
       diagonal=diagonal-third*sum(diagonal)
-!      call writevec(3,diagonal,'diag',1,3,1,6)
-!      call writemat(3,3,eivr,'eivr',1,3,1,1,3,1,6)
+      !      call writevec(3,diagonal,'diag',1,3,1,6)
+      !      call writemat(3,3,eivr,'eivr',1,3,1,1,3,1,6)
       var(3)%value = minval(diagonal(:))
       var(5)%value = maxval(diagonal(:))
       var(4)%value = sum(diagonal(:))-(var(3)%value+var(5)%value)
-!      write(*,'(a,10f10.3)') 'var(1:nvar)', var(1:nvar)%value
-!      if(mod(istep1,10) == 0)      write(uuser,'(f8.0,2x,3f8.2,2x,3f8.2)') var(1)%value,rr,theta,phi, var(3:5)%value
+      !      write(*,'(a,10f10.3)') 'var(1:nvar)', var(1:nvar)%value
+      !      if(mod(istep1,10) == 0)      write(uuser,'(f8.0,2x,3f8.2,2x,3f8.2)') var(1)%value,rr,theta,phi, var(3:5)%value
       call ScalarSample(iStage, 1, nvar, var)
 
    case (iAfterMacrostep)
@@ -7694,25 +7696,25 @@ subroutine XYProjectDF(iStage)
 
       rcutdist2 = 3*vtype(1)%min(1)**2
 
-! ... check condition
+      ! ... check condition
 
       if (maxval(vtype%nbin(1)) > mnbin_df) call Stop(txroutine, 'vtype%nbin(1) > mnbin_df2d', uout)
       if (maxval(vtype%nbin(2)) > mnbin_df) call Stop(txroutine, 'vtype%nbin(2) > mnbin_df2d', uout)
 
    case (iWriteInput)
 
-! ... set remaining elements of vtype
+      ! ... set remaining elements of vtype
 
       vtype%label = ['in-plane']
       vtype%nvar = 1
 
-! ... set nvar and allocate memory
+      ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
       allocate(var(nvar), ipnt(1,ntype))
       ipnt = 0
 
-! ... set ipnt, label, min, max, and nbin
+      ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
@@ -7768,7 +7770,7 @@ subroutine XYProjectDF(iStage)
 
    case (iAfterMacrostep)
 
-! ... normalization
+      ! ... normalization
 
       do itype = 1, ntype
          ivar = ipnt(1,itype)
@@ -7863,56 +7865,56 @@ subroutine SPDF_COMB(iStage)
 
    case (iWriteInput)
 
-     if(.not.lclink) call stop(txroutine, '.not.lclink', uout)
+      if(.not.lclink) call stop(txroutine, '.not.lclink', uout)
 
-     if (.not.allocated(rotemp)) then
-        allocate(rotemp(3,np), ro_loc(3,np), ro_temp(3,np))
-        rotemp = 0.0E+00
-        ro_loc = 0.0E+00
-        ro_temp = 0.0E+00
-     end if
+      if (.not.allocated(rotemp)) then
+         allocate(rotemp(3,np), ro_loc(3,np), ro_temp(3,np))
+         rotemp = 0.0E+00
+         ro_loc = 0.0E+00
+         ro_temp = 0.0E+00
+      end if
 
-! ... set nvar as well as allocate memory
+      ! ... set nvar as well as allocate memory
 
       nvar  = ngr(1)*count(ltype(1:ntype))
       allocate(var(nvar), ipnt(ngrgr,ntype))
       ipnt = 0
 
       nvar = 0
-    do itype = 1, ntype
-       if(ltype(itype)) then
-          if(itype == 1) then
-             do igr = 1, ngr(1)
-                nvar = nvar+1
-                ipnt(igr,itype) = nvar
-                var(nvar)%label = trim(txtype(itype))//' '//txgr(igr)
-                var(nvar)%min = vmin(itype)
-                var(nvar)%max = vmax(itype)
-                var(nvar)%nbin = nbin
-             end do
-          else if(itype == 2) then
-             do igr = 1, ngr(1)
-                nvar = nvar+1
-                ipnt(igr,itype) = nvar
-                var(nvar)%label = trim(txtype(itype))//' '//txgr(igr)
-                var(nvar)%min = vmin(itype)
-                var(nvar)%max = vmax(itype)
-                var(nvar)%nbin = nbin
-             end do
-          else if(itype == 3) then
-             do igr = 1, ngr(1)
-                nvar = nvar+1
-                ipnt(igr,itype) = nvar
-                var(nvar)%label = trim(txtype(itype))//' '//txgr(igr)
-                var(nvar)%min = vmin(itype)
-                var(nvar)%max = vmax(itype)
-                var(nvar)%nbin = nbin
-             end do
-          end if
-       end if
-    end do
+      do itype = 1, ntype
+         if(ltype(itype)) then
+            if(itype == 1) then
+               do igr = 1, ngr(1)
+                  nvar = nvar+1
+                  ipnt(igr,itype) = nvar
+                  var(nvar)%label = trim(txtype(itype))//' '//txgr(igr)
+                  var(nvar)%min = vmin(itype)
+                  var(nvar)%max = vmax(itype)
+                  var(nvar)%nbin = nbin
+               end do
+            else if(itype == 2) then
+               do igr = 1, ngr(1)
+                  nvar = nvar+1
+                  ipnt(igr,itype) = nvar
+                  var(nvar)%label = trim(txtype(itype))//' '//txgr(igr)
+                  var(nvar)%min = vmin(itype)
+                  var(nvar)%max = vmax(itype)
+                  var(nvar)%nbin = nbin
+               end do
+            else if(itype == 3) then
+               do igr = 1, ngr(1)
+                  nvar = nvar+1
+                  ipnt(igr,itype) = nvar
+                  var(nvar)%label = trim(txtype(itype))//' '//txgr(igr)
+                  var(nvar)%min = vmin(itype)
+                  var(nvar)%max = vmax(itype)
+                  var(nvar)%nbin = nbin
+               end do
+            end if
+         end if
+      end do
 
-    call DistFuncSample(iStage, nvar, var)
+      call DistFuncSample(iStage, nvar, var)
 
    case (iBeforeSimulation)
 
@@ -10523,3 +10525,148 @@ subroutine DoComplexation(iStage)
    integer(4), intent(in)  :: iStage      ! event of SSO-Move
    call ComplexationDriver(iStage)
 end subroutine
+
+!************************************************************************
+!> \page moluser moluser.F90
+!! **Z_DF_Alpha**
+!! *distribution function based on z-coordinates, planar geometry*
+!************************************************************************
+
+subroutine Z_DF_Alpha(iStage)
+
+   use MolModule
+   implicit none
+
+   integer(4),           intent(in) :: iStage
+
+   character(40),         parameter :: txroutine ='Z_DF_Alpha'
+   character(80),         parameter :: txheading ='1d z-distribution function of weakcharge charge state'
+   integer(4),            parameter :: ntype = 1
+   type(static1D_var),         save :: vtype(ntype)
+   integer(4),                 save :: nvar
+   type(df_var),  allocatable, save :: var(:)
+   integer(4),    allocatable, save :: ipnt(:,:)
+   integer(4)                       :: itype, ivar, ibin, ip, ipt, igr
+   real(8)                          :: ac, norm, vsum
+   real(8)                          :: InvFlt
+   real(8),       allocatable, save :: nsampbin1(:,:)  ! nsampbin1 is raised by One if a property was assigned to a bin within one
+   ! macrostep. After the simulation is done a property was sampled nsampbin1
+   ! times. By dividing the sample by nsampbin1, the actual average of the
+   ! property in that bin is obtained.
+
+   if (slave) return                   ! only master
+
+   if (ltrace) call WriteTrace(2, txroutine, iStage)
+
+   if (ltime) call CpuAdd('start', txroutine, 1, uout)
+
+   select case (iStage)
+   case (iReadInput)
+
+      vtype%l =.true.
+      vtype%min =-boxlen2(3)
+      vtype%max =+boxlen2(3)
+      vtype%nbin = boxlen(3)
+
+   case (iWriteInput)
+
+      ! ... set remaining elements of vtype
+
+      vtype%label = 'zchdist'
+      vtype%nvar = ngr(1)
+
+      ! ... set nvar and allocate memory
+
+      nvar = sum(vtype%nvar, 1, vtype%l)
+      allocate(var(nvar), ipnt(ngr(1),ntype), nsampbin1(nvar,-1:maxval(vtype(1:ntype)%nbin)))
+      ipnt = 0
+
+      ! ... set ipnt, label, min, max, and nbin
+
+      ivar = 0
+      do itype = 1, ntype
+         do igr = 1, ngr(1)
+            ivar = ivar + 1
+            ipnt(igr,itype) = ivar
+            var(ivar)%label = trim(vtype(itype)%label)
+            var(ivar)%min = vtype(itype)%min
+            var(ivar)%max = vtype(itype)%max
+            var(ivar)%nbin = vtype(itype)%nbin
+         end do
+      end do
+      call DistFuncSample(iStage, nvar, var)
+
+   case (iBeforeSimulation)
+
+      call DistFuncSample(iStage, nvar, var)
+      nsampbin1 = Zero
+      if (lsim .and. master .and. txstart == 'continue') read(ucnf) var
+
+   case (iBeforeMacrostep)
+
+      call DistFuncSample(iStage, nvar, var) ! -> Initiate nsamp2, avs2, nsampbin
+
+   case (iSimulationStep)
+
+      var%nsamp2 = var%nsamp2 + 1
+
+      do ip = 1, np
+         igr = igrpn(ip,1)
+         if (igr <= 0) cycle
+
+         ! ... set sample type variables
+
+         itype = 1
+         ivar = ipnt(igr,itype)
+         ipt = iptpn(ip)
+         ! if (.not. latweakcharge(iatpt(ipt))) cycle
+         ac = ro(3,ip)
+         ibin = max(-1,min(floor(var(ivar)%bini*(ac-var(ivar)%min)),int(var(ivar)%nbin)))
+         if (laz(ip)) then
+            var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
+         end if
+         var(ivar)%nsampbin(ibin) = var(ivar)%nsampbin(ibin) + One
+      end do
+
+   case (iAfterMacrostep)
+
+      do igr = 1, ngr(1)
+         ivar = ipnt(igr,1)
+         vsum = sum(var(ivar)%avs2(-1:var(ivar)%nbin))
+         norm = var(ivar)%nsamp2 * sum(var(ivar)%nsampbin(-1:var(ivar)%nbin)) * InvFlt(vsum) ! *nsamp2 in order to counteract wrong normalization in distfuncsample
+         if (vsum /= 0) then  ! avoid an infinite loop
+            do ibin = -1, var(ivar)%nbin
+               if (var(ivar)%nsampbin(ibin) > Zero) then
+                  var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)*norm/var(ivar)%nsampbin(ibin)
+                  nsampbin1(ivar,ibin) = nsampbin1(ivar,ibin) + One
+               end if
+            end do
+         end if
+      end do
+
+      call DistFuncSample(iStage, nvar, var)
+      if (lsim .and. master) write(ucnf) var
+
+   case (iAfterSimulation)
+
+      do igr = 1, ngr(1)
+         ivar = ipnt(igr,1)
+         norm = var(ivar)%nsamp1 ! *nsamp1 in order to counteract wrong normalization in distfuncsample
+         ! norm = One / (boxlen(1) * boxlen(2) * var(ivar)%bin)
+         do ibin = -1, var(ivar)%nbin
+            if (nsampbin1(ivar,ibin) > Zero) var(ivar)%avs1(ibin) = norm*var(ivar)%avs1(ibin)/nsampbin1(ivar,ibin)
+            ! var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) * norm
+         end do
+      end do
+
+      call DistFuncSample(iStage, nvar, var)
+      call DistFuncHead(nvar, var, uout)
+      call DistFuncWrite(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
+
+      deallocate(var,ipnt)
+
+   end select
+
+   if (ltime) call CpuAdd('stop', txroutine, 1, uout)
+
+end subroutine Z_DF_Alpha
