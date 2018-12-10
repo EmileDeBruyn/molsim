@@ -10546,13 +10546,9 @@ subroutine Z_DF_Alpha(iStage)
    integer(4),                 save :: nvar
    type(df_var),  allocatable, save :: var(:)
    integer(4),    allocatable, save :: ipnt(:,:)
-   integer(4)                       :: itype, ivar, ibin, ip, ipt, igr
+   integer(4)                       :: itype, ivar, ibin, ip, ipt
    real(8)                          :: ac, norm, vsum
    real(8)                          :: InvFlt
-   real(8),       allocatable, save :: nsampbin1(:,:)  ! nsampbin1 is raised by One if a property was assigned to a bin within one
-   ! macrostep. After the simulation is done a property was sampled nsampbin1
-   ! times. By dividing the sample by nsampbin1, the actual average of the
-   ! property in that bin is obtained.
 
    if (slave) return                   ! only master
 
@@ -10564,36 +10560,47 @@ subroutine Z_DF_Alpha(iStage)
    case (iReadInput)
 
       vtype%l =.true.
-      vtype%min =-boxlen2(3)
-      vtype%max =+boxlen2(3)
+      vtype%min = -boxlen2(3)
+      vtype%max = 0
       vtype%nbin = boxlen(3)
 
    case (iWriteInput)
 
-      ! ... set remaining elements of vtype
-
-      vtype%label = 'zchdist'
-      vtype%nvar = ngr(1)
+      ! ... set remaining elements of vtype, label set with ipnt
+      nvar = count(jatweakcharge > 0) * 2
+      vtype%nvar = nvar
 
       ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
-      allocate(var(nvar), ipnt(ngr(1),ntype), nsampbin1(nvar,-1:maxval(vtype(1:ntype)%nbin)))
+      allocate(var(nvar), ipnt(npt,ntype), nsampbin1(nvar,-1:maxval(vtype(1:ntype)%nbin)))
       ipnt = 0
 
       ! ... set ipnt, label, min, max, and nbin
 
       ivar = 0
       do itype = 1, ntype
-         do igr = 1, ngr(1)
-            ivar = ivar + 1
-            ipnt(igr,itype) = ivar
-            var(ivar)%label = trim(vtype(itype)%label)
-            var(ivar)%min = vtype(itype)%min
-            var(ivar)%max = vtype(itype)%max
-            var(ivar)%nbin = vtype(itype)%nbin
+         do ipt = 1, npt
+            if (jatweakcharge(ipt) > 0) then
+               ivar = ivar + 1
+               ipnt(ipt,itype) = ivar
+               var(ivar)%label = trim('zalpha ' // txat(ipt))
+               var(ivar)%min = vtype(itype)%min
+               var(ivar)%max = vtype(itype)%max
+               var(ivar)%nbin = vtype(itype)%nbin
+            else if ( any(jatweakcharge == ipt) ) then
+               ivar = ivar + 1
+               ipnt(ipt,itype) = ivar
+               var(ivar)%label = trim('zalpha ' // txat(ipt))
+               var(ivar)%min = vtype(itype)%min
+               var(ivar)%max = vtype(itype)%max
+               var(ivar)%nbin = vtype(itype)%nbin
+            else
+               ipnt(ipt,itype) = 0
+            end if
          end do
       end do
+
       call DistFuncSample(iStage, nvar, var)
 
    case (iBeforeSimulation)
@@ -10611,15 +10618,12 @@ subroutine Z_DF_Alpha(iStage)
       var%nsamp2 = var%nsamp2 + 1
 
       do ip = 1, np
-         igr = igrpn(ip,1)
-         if (igr <= 0) cycle
-
-         ! ... set sample type variables
+         ipt = iptpn(ip)
+         if (ipt <= 0) cycle
+         ivar = ipnt(ipt,1)
+         if (.not. ivar > 0) cycle
 
          itype = 1
-         ivar = ipnt(igr,itype)
-         ipt = iptpn(ip)
-         ! if (.not. latweakcharge(iatpt(ipt))) cycle
          ac = ro(3,ip)
          ibin = max(-1,min(floor(var(ivar)%bini*(ac-var(ivar)%min)),int(var(ivar)%nbin)))
          if (laz(ip)) then
@@ -10630,34 +10634,20 @@ subroutine Z_DF_Alpha(iStage)
 
    case (iAfterMacrostep)
 
-      do igr = 1, ngr(1)
-         ivar = ipnt(igr,1)
-         vsum = sum(var(ivar)%avs2(-1:var(ivar)%nbin))
-         norm = var(ivar)%nsamp2 * sum(var(ivar)%nsampbin(-1:var(ivar)%nbin)) * InvFlt(vsum) ! *nsamp2 in order to counteract wrong normalization in distfuncsample
-         if (vsum /= 0) then  ! avoid an infinite loop
-            do ibin = -1, var(ivar)%nbin
-               if (var(ivar)%nsampbin(ibin) > Zero) then
-                  var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)*norm/var(ivar)%nsampbin(ibin)
-                  nsampbin1(ivar,ibin) = nsampbin1(ivar,ibin) + One
-               end if
-            end do
-         end if
+      do ipt = 1, npt
+         ivar = ipnt(ipt,1)
+         if (.not. ivar > 0) cycle
+         do ibin = -1, var(ivar)%nbin
+            if (var(ivar)%nsampbin(ibin) > Zero) then
+               var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) * InvFlt(var(ivar)%nsampbin(ibin)) * var(ivar)%nsamp2
+            end if
+         end do
       end do
 
       call DistFuncSample(iStage, nvar, var)
       if (lsim .and. master) write(ucnf) var
 
    case (iAfterSimulation)
-
-      do igr = 1, ngr(1)
-         ivar = ipnt(igr,1)
-         norm = var(ivar)%nsamp1 ! *nsamp1 in order to counteract wrong normalization in distfuncsample
-         ! norm = One / (boxlen(1) * boxlen(2) * var(ivar)%bin)
-         do ibin = -1, var(ivar)%nbin
-            if (nsampbin1(ivar,ibin) > Zero) var(ivar)%avs1(ibin) = norm*var(ivar)%avs1(ibin)/nsampbin1(ivar,ibin)
-            ! var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) * norm
-         end do
-      end do
 
       call DistFuncSample(iStage, nvar, var)
       call DistFuncHead(nvar, var, uout)
