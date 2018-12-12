@@ -2796,7 +2796,10 @@ subroutine StaticUser(iStage)
 
       if (txuser == 'jurij') call Z_DF_Slit(iStage)     ! Jurij Rescic  distribution in a slit
       if (txuser == 'rudi') call ElMom(iStage)     ! Rudi Podgorni  electrostatic moments
-      if (txuser == 'emile') call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
+      if (txuser == 'emile') then
+         call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
+         call Zbin_XY_Plane_Alpha(iStage) ! Emile de Bruyn network alpha radial distribution in z-direction
+      end if
 
    end if
 
@@ -10573,7 +10576,7 @@ subroutine Z_DF_Alpha(iStage)
       ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
-      allocate(var(nvar), ipnt(npt,ntype), nsampbin1(nvar,-1:maxval(vtype(1:ntype)%nbin)))
+      allocate(var(nvar), ipnt(npt,ntype))
       ipnt = 0
 
       ! ... set ipnt, label, min, max, and nbin
@@ -10606,7 +10609,6 @@ subroutine Z_DF_Alpha(iStage)
    case (iBeforeSimulation)
 
       call DistFuncSample(iStage, nvar, var)
-      nsampbin1 = Zero
       if (lsim .and. master .and. txstart == 'continue') read(ucnf) var
 
    case (iBeforeMacrostep)
@@ -10660,3 +10662,192 @@ subroutine Z_DF_Alpha(iStage)
    if (ltime) call CpuAdd('stop', txroutine, 1, uout)
 
 end subroutine Z_DF_Alpha
+
+!************************************************************************
+!> \page moluser moluser.F90
+!! **Z_DF_Alpha**
+!! *distribution function based on z-coordinates, planar geometry*
+!************************************************************************
+
+subroutine Zbin_XY_Plane_Alpha(iStage)
+
+   use MolModule
+   implicit none
+
+   integer(4),           intent(in) :: iStage
+
+   character(40),         parameter :: txroutine ='Zbin_XY_Plane_Alpha'
+   character(80),         parameter :: txheading ='2d network distribution function  binned in z-direction'
+   integer(4),            parameter :: ntype = 1
+   type(static1D_var),         save :: vtype(ntype)
+   integer(4),                 save :: nvar
+   integer(4),                 save :: ngrloc(ntype)
+   real(8),       allocatable, save :: nsampbin1(:,:)  ! nsampbin1 is raised by One if a property was assigned to a bin within one
+   ! macrostep. After the simulation is done a property was sampled nsampbin1
+   ! times. By dividing the sample by nsampbin1, the actual average of the
+   ! property in that bin is obtained.
+
+   type(df_var),  allocatable, save :: var(:)
+   integer(4),    allocatable, save :: ipnt(:,:,:)
+   ! integer(4),    allocatable, save :: ipnt(:,:)
+   type(networkprop_var)            :: NetworkProperty
+   type(chainprop_var)              :: ChainProperty
+
+   character(3)                     :: txinw
+   integer(4)                       :: itype, ivar, ibin, ip, ipt
+   integer(4)                       :: inwt, inw, ict, ic, icloc, iploc, igr, igrloc
+   real(8)                          :: ac
+   real(8)                          :: InvFlt
+   real(8)                          :: rcom(1:3), r2, r1, vsum, norm, dvol, dr(3)
+   real(8)                          :: zmin, zmax, rmax
+   integer(4)                       :: zbins, rbins
+   integer(4)                       :: zbin, rbin, rbini
+
+   namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rbins, rmax
+
+   if (slave) return                   ! only master
+
+   if (ltrace) call WriteTrace(2, txroutine, iStage)
+
+   if (ltime) call CpuAdd('start', txroutine, 1, uout)
+
+   select case (iStage)
+   case (iReadInput)
+
+      zmin  = - boxlen2(3)
+      zmax  = 0
+      zbins = boxlen2(3)
+      rbins = 100
+      rmax  = 100.0d0
+
+      rewind(uin)
+      read(uin,nmlNetworkWallDF)
+
+      vtype%l    = .true.
+      vtype%min  = -boxlen2(3)
+      vtype%max  = 0.0d0
+      vtype%nbin = zbins * rbins
+      rbini = One / (rmax / rbins)
+
+   case (iWriteInput)
+
+      ! ... set remaining elements of vtype, label set with ipnt
+      vtype%label = '<alpha>'
+      vtype%nvar = nnw
+
+      ngrloc(1:ntype) = vtype(1:ntype)%nvar / nnw   ! = ngr(1), ngr(1), nct, 1, 1, 1, ngr(1)
+
+      ! ... set nvar and allocate memory
+
+      nvar = sum(vtype%nvar, 1, vtype%l)
+      allocate(var(nvar),ipnt(maxval(ngrloc(1:ntype)),nnw,ntype),nsampbin1(nvar,-1:maxval(vtype(1:ntype)%nbin)))
+      ipnt = 0
+
+      ! ... set ipnt, label, min, max, and nbin
+
+      ivar = 0
+      do itype = 1, ntype
+         do inw = 1, nnw
+            write (txinw,"(i3)") inw
+            do igrloc = 1, ngrloc(itype)
+               ivar = ivar + 1
+               ipnt(igrloc,inw,itype) = ivar
+               var(ivar)%min  = vtype(itype)%min
+               var(ivar)%max  = vtype(itype)%max
+               var(ivar)%nbin = vtype(itype)%nbin
+               var(ivar)%label = trim(vtype(itype)%label)//' inw:'//trim(adjustl(txinw))//' '//txgr(igrloc)
+            end do
+         end do
+      end do
+
+      call DistFuncSample(iStage, nvar, var) ! -> Initiate bin and bini
+
+   case (iBeforeSimulation)
+
+      call DistFuncSample(iStage, nvar, var) ! -> Initiate nsamp1, avs1, avsd
+      nsampbin1 = Zero
+      if (lsim .and. master .and. txstart == 'continue') read(ucnf) var
+
+   case (iBeforeMacrostep)
+
+      call DistFuncSample(iStage, nvar, var) ! -> Initiate nsamp2, avs2, nsampbin
+
+   case (iSimulationStep)
+
+      var%nsamp2 = var%nsamp2 + 1
+
+      do inw = 1, nnw
+         inwt = inwtnwn(inw)
+         itype = 1
+
+         ! ... get center of mass of network inw and network type inwt
+         call CalcNetworkProperty(inw,NetworkProperty)
+
+         rcom(1:3) = NetworkProperty%ro(1:3)
+
+         ivar = ipnt(1,inw,itype)
+         do iploc = 1, npnwt(inwt)
+            ip = ipnplocnwn(iploc,inw)
+            ipt = iptpn(ip)
+            if (.not. latweakcharge(iatpt(ipt))) cycle
+            dr(1:3) = ro(1:3,ip) - rcom(1:3)
+            call PBCr2(dr(1), dr(2), dr(3), r2)
+            r1 = sqrt(r2)
+            ac = ro(3,ip)
+            zbin = max(-1,min(floor(var(ivar)%bini * (ac-var(ivar)%min)), int(zbins)))
+            rbin = max(-1,min(floor(rbini * r1), int(rbins)))
+            ibin = (zbin - 1) * rbins + rbin
+            if (laz(ip)) var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
+            var(ivar)%nsampbin(ibin) = var(ivar)%nsampbin(ibin) + One
+         end do
+      end do
+
+   case (iAfterMacrostep)
+
+      ! ... sample dependent distribution functions
+
+      do inw = 1, nnw
+
+         ! ... normalisation
+         do ipt = 1, npt
+            ivar = ipnt(1,inw,itype)
+            vsum = sum(var(ivar)%avs2(-1:var(ivar)%nbin))
+            norm = var(ivar)%nsamp2 * sum(var(ivar)%nsampbin(-1:var(ivar)%nbin)) * InvFlt(vsum) ! *nsamp2 in order to counteract wrong normalization in distfuncsample
+            do ibin = -1, var(ivar)%nbin
+               if (var(ivar)%nsampbin(ibin) > Zero) then
+                  var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin)*norm/var(ivar)%nsampbin(ibin)
+                  nsampbin1(ivar,ibin) = nsampbin1(ivar,ibin)+One
+               end if
+            end do
+            ! ivar = ipnt(ipt,1)
+            ! if (.not. ivar > 0) cycle
+            ! do ibin = -1, var(ivar)%nbin
+            !    if (var(ivar)%nsampbin(ibin) > Zero) then
+            !       var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) * InvFlt(var(ivar)%nsampbin(ibin)) * var(ivar)%nsamp2
+            !    end if
+            ! end do
+         end do
+      end do
+
+      call DistFuncSample(iStage, nvar, var)
+      if (lsim .and. master) write(ucnf) var
+
+   case (iAfterSimulation)
+
+      ivar = ipnt(1,inw,itype)
+      norm = var(ivar)%nsamp1 ! *nsamp1 in order to counteract wrong normalization in distfuncsample
+      do ibin = -1, var(ivar)%nbin
+         if (nsampbin1(ivar,ibin) > Zero) var(ivar)%avs1(ibin) = norm*var(ivar)%avs1(ibin)/nsampbin1(ivar,ibin)
+      end do
+
+      call DistFuncSample(iStage, nvar, var)
+      call DistFuncHead(nvar, var, uout)
+      call DistFuncWrite(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
+
+      deallocate(var,ipnt)
+
+   end select
+
+   if (ltime) call CpuAdd('stop', txroutine, 1, uout)
+
+end subroutine Zbin_XY_Plane_Alpha
