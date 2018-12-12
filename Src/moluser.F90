@@ -10552,6 +10552,10 @@ subroutine Z_DF_Alpha(iStage)
    integer(4)                       :: itype, ivar, ibin, ip, ipt
    real(8)                          :: ac, norm, vsum
    real(8)                          :: InvFlt
+   real(8)                          :: zmin, zmax, rmax
+   integer(4)                       :: zbins, rbins
+
+   namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rmax, rbins
 
    if (slave) return                   ! only master
 
@@ -10562,10 +10566,16 @@ subroutine Z_DF_Alpha(iStage)
    select case (iStage)
    case (iReadInput)
 
+      zmin  = - boxlen2(3)
+      zmax = 0.0d0
+
+      rewind(uin)
+      read(uin,nmlNetworkWallDF)
+
       vtype%l =.true.
-      vtype%min = -boxlen2(3)
-      vtype%max = 0
-      vtype%nbin = boxlen(3)
+      vtype%min = zmin
+      vtype%max = zmax
+      vtype%nbin = zbins
 
    case (iWriteInput)
 
