@@ -10709,9 +10709,9 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    real(8)                          :: ac
    real(8)                          :: InvFlt
    real(8)                          :: rcom(1:3), r2, r1, vsum, norm, dvol, dr(3)
-   real(8)                          :: zmin, zmax, rmax
-   integer(4)                       :: zbins, rbins
-   integer(4)                       :: zbin, rbin, rbini, zbini
+   real(8),       allocatable, save :: zmin, zmax, rmax
+   integer(4),    allocatable, save :: zbins, rbins, rbini, zbini
+   integer(4)                      :: zbin, rbin
 
    namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rbins, rmax
 
@@ -10737,8 +10737,8 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       vtype%min  = zmin
       vtype%max  = zmax
       vtype%nbin = zbins * rbins
-      zbini = One / ((zmax - zmin) / rbins)
-      rbini = One / (rmax / rbins)
+      zbini = zbins / (zmax - zmin)
+      rbini = rbins / rmax
 
    case (iWriteInput)
 
@@ -10805,7 +10805,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             call PBCr2(dr(1), dr(2), dr(3), r2)
             r1 = sqrt(r2)
             ac = ro(3,ip)
-            zbin = max(-1,min(floor(zbini * (ac-var(ivar)%min)), int(zbins)))
+            zbin = max(-1,min(floor(zbini * (ac-zmin)), int(zbins)))
             rbin = max(-1,min(floor(rbini * r1), int(rbins)))
             ibin = (zbin - 1) * rbins + rbin
             if (laz(ip)) var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
@@ -10818,6 +10818,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       ! ... sample dependent distribution functions
 
       do inw = 1, nnw
+         itype = 1
 
          ! ... normalisation
          do ipt = 1, npt
@@ -10845,10 +10846,13 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
 
    case (iAfterSimulation)
 
-      ivar = ipnt(1,inw,itype)
-      norm = var(ivar)%nsamp1 ! *nsamp1 in order to counteract wrong normalization in distfuncsample
-      do ibin = -1, var(ivar)%nbin
-         if (nsampbin1(ivar,ibin) > Zero) var(ivar)%avs1(ibin) = norm*var(ivar)%avs1(ibin)/nsampbin1(ivar,ibin)
+      do inw = 1, nnw
+         itype = 1
+         ivar = ipnt(1,inw,itype)
+         norm = var(ivar)%nsamp1 ! *nsamp1 in order to counteract wrong normalization in distfuncsample
+         do ibin = -1, var(ivar)%nbin
+            if (nsampbin1(ivar,ibin) > Zero) var(ivar)%avs1(ibin) = norm*var(ivar)%avs1(ibin)/nsampbin1(ivar,ibin)
+         end do
       end do
 
       call DistFuncSample(iStage, nvar, var)
