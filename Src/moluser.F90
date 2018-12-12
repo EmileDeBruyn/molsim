@@ -10726,8 +10726,8 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
 
       zmin  = - boxlen2(3)
       zmax  = 0.0d0
-      zbins = boxlen2(3)
-      rbins = 100
+      zbins = 100
+      rbins = 50
       rmax  = 100.0d0
 
       rewind(uin)
@@ -10857,7 +10857,19 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
 
       call DistFuncSample(iStage, nvar, var)
       call DistFuncHead(nvar, var, uout)
-      call DistFuncWrite(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
+      ! call DistFuncWrite(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
+      ! if (ishow/= 0) call DistFuncShow(ishow, txheading, nvar, var, lout)
+
+      if (ilist/=0) then
+         write(ulist,'(a)') txheading
+         write(ulist,'(i5)') nvar
+         do ivar = 1, nvar
+            write(ulist,'(a)') var(ivar)%label
+            write(ulist,'(i5)') 1+(var(ivar)%nbin-1)/ishow
+            write(ulist,'(g15.5,a,g15.5,a,g15.5)') &
+                  (ibin, char(9), var(ivar)%avs1(ibin), char(9), var(ivar)%avsd(ibin), ibin = 0, var(ivar)%nbin-1, ishow)
+         end do
+      end if
 
       deallocate(var,ipnt)
 
