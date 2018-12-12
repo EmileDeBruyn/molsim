@@ -10743,7 +10743,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    case (iWriteInput)
 
       ! ... set remaining elements of vtype, label set with ipnt
-      vtype%label = '<alpha>'
+      vtype%label = '<alpha> zdf'
       vtype%nvar = nnw
 
       ngrloc(1:ntype) = vtype(1:ntype)%nvar / nnw   ! = ngr(1), ngr(1), nct, 1, 1, 1, ngr(1)
@@ -10852,7 +10852,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
          write(ulist,'(i5)') nvar
          do ivar = 1, nvar
             write(ulist,'(a)') var(ivar)%label
-            write(ulist,'(i5)') 1+(var(ivar)%nbin-1)/ishow
+            write(ulist,'(i5)') 2+(var(ivar)%nbin)/ishow
             write(ulist,'(g15.5,a,g15.5,a,g15.5)') &
                   (ibin, char(9), var(ivar)%avs1(ibin), char(9), var(ivar)%avsd(ibin), ibin = -1, var(ivar)%nbin, ishow)
          end do
