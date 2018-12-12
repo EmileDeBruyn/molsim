@@ -10725,7 +10725,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    case (iReadInput)
 
       zmin  = - boxlen2(3)
-      zmax  = 0
+      zmax  = 0.0d0
       zbins = boxlen2(3)
       rbins = 100
       rmax  = 100.0d0
@@ -10734,8 +10734,8 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       read(uin,nmlNetworkWallDF)
 
       vtype%l    = .true.
-      vtype%min  = -boxlen2(3)
-      vtype%max  = 0.0d0
+      vtype%min  = zmin
+      vtype%max  = zmax
       vtype%nbin = zbins * rbins
       rbini = One / (rmax / rbins)
 
