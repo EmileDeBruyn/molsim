@@ -10711,7 +10711,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    real(8)                          :: rcom(1:3), r2, r1, vsum, norm, dvol, dr(3)
    real(8)                          :: zmin, zmax, rmax
    integer(4)                       :: zbins, rbins
-   integer(4)                       :: zbin, rbin, rbini
+   integer(4)                       :: zbin, rbin, rbini, zbini
 
    namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rbins, rmax
 
@@ -10737,6 +10737,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       vtype%min  = zmin
       vtype%max  = zmax
       vtype%nbin = zbins * rbins
+      zbini = One / ((zmax - zmin) / rbins)
       rbini = One / (rmax / rbins)
 
    case (iWriteInput)
@@ -10804,7 +10805,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             call PBCr2(dr(1), dr(2), dr(3), r2)
             r1 = sqrt(r2)
             ac = ro(3,ip)
-            zbin = max(-1,min(floor(var(ivar)%bini * (ac-var(ivar)%min)), int(zbins)))
+            zbin = max(-1,min(floor(zbini * (ac-var(ivar)%min)), int(zbins)))
             rbin = max(-1,min(floor(rbini * r1), int(rbins)))
             ibin = (zbin - 1) * rbins + rbin
             if (laz(ip)) var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
