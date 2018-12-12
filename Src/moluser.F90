@@ -10808,6 +10808,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             zbin = max(-1,min(floor(zbini * (ac-zmin)), int(zbins)))
             rbin = max(-1,min(floor(rbini * r1), int(rbins)))
             ibin = (zbin - 1) * rbins + rbin
+            if (ibin < 0) ibin = -1
             if (laz(ip)) var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
             var(ivar)%nsampbin(ibin) = var(ivar)%nsampbin(ibin) + One
          end do
@@ -10815,19 +10816,17 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
 
    case (iAfterMacrostep)
 
-      ! ! ... sample dependent distribution functions
-      ! do inw = 1, nnw
-      !    itype = 1
-      !    ! ... normalisation
-      !    do ipt = 1, npt
-      !       ivar = ipnt(1,inw,itype)
-      !       do ibin = -1, var(ivar)%nbin
-      !          if (var(ivar)%nsampbin(ibin) > Zero) then
-      !             var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) * InvFlt(var(ivar)%nsampbin(ibin)) * var(ivar)%nsamp2
-      !          end if
-      !       end do
-      !    end do
-      ! end do
+      ! ... sample dependent distribution functions
+      do inw = 1, nnw
+         itype = 1
+         ! ... normalisation
+         ivar = ipnt(1,inw,itype)
+         do ibin = -1, var(ivar)%nbin
+            if (var(ivar)%nsampbin(ibin) > Zero) then
+               var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) * InvFlt(var(ivar)%nsampbin(ibin)) * var(ivar)%nsamp2
+            end if
+         end do
+      end do
 
       call DistFuncSample(iStage, nvar, var)
       if (lsim .and. master) write(ucnf) var
@@ -10855,7 +10854,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             write(ulist,'(a)') var(ivar)%label
             write(ulist,'(i5)') 1+(var(ivar)%nbin-1)/ishow
             write(ulist,'(g15.5,a,g15.5,a,g15.5)') &
-                  (ibin, char(9), var(ivar)%avs1(ibin), char(9), var(ivar)%avsd(ibin), ibin = 0, var(ivar)%nbin-1, ishow)
+                  (ibin, char(9), var(ivar)%avs1(ibin), char(9), var(ivar)%avsd(ibin), ibin = -1, var(ivar)%nbin, ishow)
          end do
       end if
 
