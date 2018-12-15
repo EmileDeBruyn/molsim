@@ -10692,11 +10692,6 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    type(static1D_var),         save :: vtype(ntype)
    integer(4),                 save :: nvar
    integer(4),                 save :: ngrloc(ntype)
-   real(8),       allocatable, save :: nsampbin1(:,:)  ! nsampbin1 is raised by One if a property was assigned to a bin within one
-   ! macrostep. After the simulation is done a property was sampled nsampbin1
-   ! times. By dividing the sample by nsampbin1, the actual average of the
-   ! property in that bin is obtained.
-
    type(df_var),  allocatable, save :: var(:)
    integer(4),    allocatable, save :: ipnt(:,:,:)
    ! integer(4),    allocatable, save :: ipnt(:,:)
@@ -10712,6 +10707,8 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    real(8),       allocatable, save :: zmin, zmax, rmax, rbini, zbini
    integer(4),    allocatable, save :: zbins, rbins
    integer(4)                       :: zbin, rbin
+   integer(4),    allocatable, save :: binmap(:,:), zmap(:), rmap(:)
+   character(15), allocatable, save :: NaN
 
    namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rbins, rmax
 
@@ -10740,10 +10737,12 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       zbini = abs(real(zbins) / (zmax - zmin))
       rbini = abs(real(rbins) / rmax)
 
+      NaN = '     NaN'
+
    case (iWriteInput)
 
       ! ... set remaining elements of vtype, label set with ipnt
-      vtype%label = '<alpha> zdf'
+      vtype%label = '<alpha> z-rdf'
       vtype%nvar = nnw
 
       ngrloc(1:ntype) = vtype(1:ntype)%nvar / nnw   ! = ngr(1), ngr(1), nct, 1, 1, 1, ngr(1)
@@ -10751,7 +10750,8 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       ! ... set nvar and allocate memory
 
       nvar = sum(vtype%nvar, 1, vtype%l)
-      allocate(var(nvar),ipnt(maxval(ngrloc(1:ntype)),nnw,ntype),nsampbin1(nvar,-1:maxval(vtype(1:ntype)%nbin)))
+      allocate(var(nvar),ipnt(maxval(ngrloc(1:ntype)),nnw,ntype), &
+               binmap(0:zbins-1,0:rbins-1), zmap(0:vtype(1)%nbin-1), rmap(0:vtype(1)%nbin-1))
       ipnt = 0
 
       ! ... set ipnt, label, min, max, and nbin
@@ -10771,12 +10771,23 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
          end do
       end do
 
+      ! ... write the bin map in format (zbin, rbin, ibin)
+
+      ibin = 0
+      do zbin = 0, zbins - 1
+          do rbin = 0, rbins - 1
+             ibin = zbin * rbins + rbin
+             binmap(zbin,rbin) = ibin
+             zmap(ibin) = zbin
+             rmap(ibin) = rbin
+          end do
+      end do
+
       call DistFuncSample(iStage, nvar, var) ! -> Initiate bin and bini
 
    case (iBeforeSimulation)
 
       call DistFuncSample(iStage, nvar, var) ! -> Initiate nsamp1, avs1, avsd
-      nsampbin1 = Zero
       if (lsim .and. master .and. txstart == 'continue') read(ucnf) var
 
    case (iBeforeMacrostep)
@@ -10805,10 +10816,24 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             call PBCr2(dr(1), dr(2), dr(3), r2)
             r1 = sqrt(r2)
             ac = ro(3,ip)
-            zbin = max(-1,min(floor(zbini * (ac-zmin)), int(zbins)))
-            rbin = max(-1,min(floor(rbini * r1), int(rbins)))
-            ibin = (zbin - 1) * rbins + rbin
-            if (ibin < 0) ibin = -1
+            if ((ac < zmin) .or. (ac > zmax)) then
+               zbin = -1
+            else
+               zbin = min(floor(zbini * (ac-zmin)), zbins - 1)
+            end if
+            if ((r1 < 0) .or. (r1 > rmax)) then
+               rbin = -1
+            else
+                rbin = min(floor(rbini * r1), rbins - 1)
+            end if
+            if ((zbin == -1) .or. (rbin == -1)) then
+               ibin = -1
+            else
+               ibin = binmap(zbin,rbin)
+            end if
+            if (ibin < 0) then
+               ibin = -1
+            end if
             if (laz(ip)) var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
             var(ivar)%nsampbin(ibin) = var(ivar)%nsampbin(ibin) + One
          end do
@@ -10833,28 +10858,24 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
 
    case (iAfterSimulation)
 
-      ! do inw = 1, nnw
-      !    itype = 1
-      !    ivar = ipnt(1,inw,itype)
-      !    norm = var(ivar)%nsamp1 ! *nsamp1 in order to counteract wrong normalization in distfuncsample
-      !    do ibin = -1, var(ivar)%nbin
-      !       if (nsampbin1(ivar,ibin) > Zero) var(ivar)%avs1(ibin) = norm*var(ivar)%avs1(ibin)/nsampbin1(ivar,ibin)
-      !    end do
-      ! end do
-
       call DistFuncSample(iStage, nvar, var)
       call DistFuncHead(nvar, var, uout)
-      ! call DistFuncWrite(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
-      ! if (ishow/= 0) call DistFuncShow(ishow, txheading, nvar, var, lout)
 
       if (ilist/=0) then
          write(ulist,'(a)') txheading
          write(ulist,'(i5)') nvar
          do ivar = 1, nvar
             write(ulist,'(a)') var(ivar)%label
-            write(ulist,'(i5)') 2+(var(ivar)%nbin)/ishow
-            write(ulist,'(g15.5,a,g15.5,a,g15.5)') &
-                  (ibin, char(9), var(ivar)%avs1(ibin), char(9), var(ivar)%avsd(ibin), ibin = -1, var(ivar)%nbin, ishow)
+            write(ulist,'(i5)') 1+(var(ivar)%nbin)/ishow
+            write(ulist,'(i6,a,g15.5,a,g15.5,a,g15.5,a,g15.5)') &
+                 -1, char(9), NaN, char(9), NaN, char(9), var(ivar)%avs1(-1), char(9), var(ivar)%avsd(-1)
+            write(ulist,'(i6,a,g15.5,a,g15.5,a,g15.5,a,g15.5)') &
+                 (ibin, char(9),&
+                  zmin + (zmap(ibin) + 0.5) / zbini, char(9),&
+                  (rmap(ibin) + 0.5) / rbini, char(9),&
+                  var(ivar)%avs1(ibin), char(9),&
+                  var(ivar)%avsd(ibin),&
+                  ibin = 0, var(ivar)%nbin - 1, ishow)
          end do
       end if
 
