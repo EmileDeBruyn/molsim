@@ -10703,12 +10703,13 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    integer(4)                       :: inwt, inw, ict, ic, icloc, iploc, igr, igrloc
    real(8)                          :: ac
    real(8)                          :: InvFlt
-   real(8)                          :: rcom(1:3), r2, r1, vsum, norm, dvol, dr(3)
+   real(8)                          :: rcom(1:3), r2, r1, z1, dr(3)
    real(8),       allocatable, save :: zmin, zmax, rmax, rbini, zbini
    integer(4),    allocatable, save :: zbins, rbins
    integer(4)                       :: zbin, rbin
    integer(4),    allocatable, save :: binmap(:,:), zmap(:), rmap(:)
    character(15), allocatable, save :: NaN
+   real(8),       allocatable, save :: zipmax, ripmax
 
    namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rbins, rmax
 
@@ -10738,6 +10739,8 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       rbini = abs(real(rbins) / rmax)
 
       NaN = '     NaN'
+      zipmax = 0.0d0
+      ripmax = 0.0d0
 
    case (iWriteInput)
 
@@ -10816,10 +10819,11 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             call PBCr2(dr(1), dr(2), dr(3), r2)
             r1 = sqrt(r2)
             ac = ro(3,ip)
+            z1 = ac - zmin
             if ((ac < zmin) .or. (ac > zmax)) then
                zbin = -1
             else
-               zbin = min(floor(zbini * (ac-zmin)), zbins - 1)
+               zbin = min(floor(zbini * z1), zbins - 1)
             end if
             if ((r1 < 0) .or. (r1 > rmax)) then
                rbin = -1
@@ -10834,7 +10838,11 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             if (ibin < 0) then
                ibin = -1
             end if
-            if (laz(ip)) var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
+            if (laz(ip)) then
+                var(ivar)%avs2(ibin) = var(ivar)%avs2(ibin) + One
+                if (z1 > zipmax) zipmax = z1
+                if (r1 > ripmax) ripmax = r1
+            end if
             var(ivar)%nsampbin(ibin) = var(ivar)%nsampbin(ibin) + One
          end do
       end do
@@ -10868,7 +10876,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
             write(ulist,'(a)') var(ivar)%label
             write(ulist,'(i5)') 1+(var(ivar)%nbin)/ishow
             write(ulist,'(i6,a,g15.5,a,g15.5,a,g15.5,a,g15.5)') &
-                 -1, char(9), NaN, char(9), NaN, char(9), var(ivar)%avs1(-1), char(9), var(ivar)%avsd(-1)
+                 -1, char(9), zipmax, char(9), ripmax, char(9), var(ivar)%avs1(-1), char(9), var(ivar)%avsd(-1)
             write(ulist,'(i6,a,g15.5,a,g15.5,a,g15.5,a,g15.5)') &
                  (ibin, char(9),&
                   (zmap(ibin) + 0.5) / zbini, char(9),&
