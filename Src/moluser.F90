@@ -10871,7 +10871,7 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
                  -1, char(9), NaN, char(9), NaN, char(9), var(ivar)%avs1(-1), char(9), var(ivar)%avsd(-1)
             write(ulist,'(i6,a,g15.5,a,g15.5,a,g15.5,a,g15.5)') &
                  (ibin, char(9),&
-                  zmin + (zmap(ibin) + 0.5) / zbini, char(9),&
+                  (zmap(ibin) + 0.5) / zbini, char(9),&
                   (rmap(ibin) + 0.5) / rbini, char(9),&
                   var(ivar)%avs1(ibin), char(9),&
                   var(ivar)%avsd(ibin),&
