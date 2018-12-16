@@ -10704,12 +10704,11 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    real(8)                          :: ac
    real(8)                          :: InvFlt
    real(8)                          :: rcom(1:3), r2, r1, z1, dr(3)
-   real(8),       allocatable, save :: zmin, zmax, rmax, rbini, zbini
-   integer(4),    allocatable, save :: zbins, rbins
+   real(8),                    save :: zmin, zmax, rmax, rbini, zbini
+   integer(4),                 save :: zbins, rbins
    integer(4)                       :: zbin, rbin
    integer(4),    allocatable, save :: binmap(:,:), zmap(:), rmap(:)
-   character(15), allocatable, save :: NaN
-   real(8),       allocatable, save :: zipmax, ripmax
+   real(8),                    save :: zipmax, ripmax
 
    namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rbins, rmax
 
@@ -10738,7 +10737,6 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
       zbini = abs(real(zbins) / (zmax - zmin))
       rbini = abs(real(rbins) / rmax)
 
-      NaN = '     NaN'
       zipmax = 0.0d0
       ripmax = 0.0d0
 
