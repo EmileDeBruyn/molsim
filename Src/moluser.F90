@@ -2796,7 +2796,8 @@ subroutine StaticUser(iStage)
 
       if (txuser == 'jurij') call Z_DF_Slit(iStage)     ! Jurij Rescic  distribution in a slit
       if (txuser == 'rudi') call ElMom(iStage)     ! Rudi Podgorni  electrostatic moments
-      if (txuser == 'emile') then
+      if (txuser == 'emile1') call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
+      if (txuser == 'emile2') then
          call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
          call Zbin_XY_Plane_Alpha(iStage) ! Emile de Bruyn network alpha radial distribution in z-direction
       end if

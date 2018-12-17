@@ -1631,7 +1631,7 @@ subroutine CalcNetworkProperty(inw, NetworkProperty)
 
 ! ... degree of ionization
 
-   if (lweakcharge) then
+   if ((lweakcharge) .and. (count(laz(1:np)) > 0)) then
       npcharged = count(laz(1:np).and.lpnnwn(1:np,inw))
       alpha     = real(npcharged)/npweakchargenwt(inwt)
       NetworkProperty%alpha = alpha
