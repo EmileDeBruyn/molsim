@@ -2801,6 +2801,7 @@ subroutine StaticUser(iStage)
          call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
          call Zbin_XY_Plane_Alpha(iStage) ! Emile de Bruyn network alpha radial distribution in z-direction
       end if
+      if (txuser == 'emile3') call DF_XYZ_Bins(iStage) ! Emile de Bruyn charge average distribution in xy-plane and z-direction
 
    end if
 
@@ -10893,3 +10894,153 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
    if (ltime) call CpuAdd('stop', txroutine, 1, uout)
 
 end subroutine Zbin_XY_Plane_Alpha
+
+
+subroutine DF_XYZ_Bins(iStage)
+
+   use MolModule
+   implicit none
+
+   integer(4),           intent(in) :: iStage
+
+   character(40),         parameter :: txroutine ='DF_XYZ_Bins'
+   character(80),         parameter :: txheading ='Distribution function, binned in 3d cartesian space.'
+   integer(4),            parameter :: ntype = 1
+   type(static2D_var),         save :: vtype(ntype)
+   integer(4),                 save :: nvar
+   type(df2d_var), allocatable, save :: var(:)
+   integer(4),    allocatable, save :: ipnt(:,:)
+   integer(4)                       :: itype, ivar, ip, ipt, ibinx, ibinz
+   real(8),            dimension(2) :: ac
+   real(8)                          :: norm, vsum
+   real(8)                          :: InvFlt
+   real(8)                          :: zmin, zmax, xmin, xmax
+   integer(4)                       :: zbins, xbins
+
+   namelist /nmlNetworkWallDF/ zmin, zmax, zbins, xmin, xmax, xbins
+
+   if (slave) return                   ! only master
+
+   if (ltrace) call WriteTrace(2, txroutine, iStage)
+
+   if (ltime) call CpuAdd('start', txroutine, 1, uout)
+
+   select case (iStage)
+   case (iReadInput)
+
+      zmin  = - boxlen2(3)
+      zmax = 0.0d0
+      xmin = -boxlen2(1)
+      xmax = +boxlen2(1)
+      xbins = int(boxlen2(1))
+
+      rewind(uin)
+      read(uin,nmlNetworkWallDF)
+
+      vtype%l =.true.
+      vtype%min(1) = zmin
+      vtype%min(2) = xmin
+      vtype%max(1) = zmax
+      vtype%max(2) = xmax
+      vtype%nbin(1) = zbins
+      vtype%nbin(2) = xbins
+
+   case (iWriteInput)
+
+      ! ... set remaining elements of vtype, label set with ipnt
+      nvar = count(jatweakcharge > 0) * 2
+      vtype%nvar = nvar
+
+      ! ... set nvar and allocate memory
+
+      nvar = sum(vtype%nvar, 1, vtype%l)
+      allocate(var(nvar), ipnt(npt,ntype))
+      ipnt = 0
+
+      ! ... set ipnt, label, min, max, and nbin
+
+      ivar = 0
+      do itype = 1, ntype
+         do ipt = 1, npt
+            if (jatweakcharge(ipt) > 0) then
+               ivar = ivar + 1
+               ipnt(ipt,itype) = ivar
+               var(ivar)%label = trim('xzalpha ' // txat(ipt))
+               var(ivar)%min = vtype(itype)%min
+               var(ivar)%max = vtype(itype)%max
+               var(ivar)%nbin = vtype(itype)%nbin
+            else if ( any(jatweakcharge == ipt) ) then
+               ivar = ivar + 1
+               ipnt(ipt,itype) = ivar
+               var(ivar)%label = trim('xzalpha ' // txat(ipt))
+               var(ivar)%min = vtype(itype)%min
+               var(ivar)%max = vtype(itype)%max
+               var(ivar)%nbin = vtype(itype)%nbin
+            else
+               ipnt(ipt,itype) = 0
+            end if
+         end do
+      end do
+
+      call DistFunc2DSample(iStage, nvar, var)
+
+   case (iBeforeSimulation)
+
+      call DistFunc2DSample(iStage, nvar, var)
+      if (lsim .and. master .and. txstart == 'continue') read(ucnf) var
+
+   case (iBeforeMacrostep)
+
+      call DistFunc2DSample(iStage, nvar, var) ! -> Initiate nsamp2, avs2, nsampbin
+
+   case (iSimulationStep)
+
+      var%nsamp2 = var%nsamp2 + 1
+
+      do ip = 1, np
+         ipt = iptpn(ip)
+         if (ipt <= 0) cycle
+         ivar = ipnt(ipt,1)
+         if (.not. ivar > 0) cycle
+
+         itype = 1
+         ac = (/ro(1,ip), ro(3,ip)/)
+         ibinx = max(-1,min(floor(var(ivar)%bini(1)*(ac(1)-var(ivar)%min(1))),int(var(ivar)%nbin(1))))
+         ibinz = max(-1,min(floor(var(ivar)%bini(2)*(ac(2)-var(ivar)%min(2))),int(var(ivar)%nbin(2))))
+         if (laz(ip)) then
+            var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) + One
+         end if
+         var(ivar)%nsampbin(ibinx,ibinz) = var(ivar)%nsampbin(ibinx,ibinz) + One
+      end do
+
+   case (iAfterMacrostep)
+
+      do ipt = 1, npt
+         ivar = ipnt(ipt,1)
+         if (.not. ivar > 0) cycle
+         do ibinx = -1, var(ivar)%nbin(1)
+            if (var(ivar)%nsampbin(ibinx,ibinz) > Zero) then
+               do ibinz = -1, var(ivar)%nbin(2)
+                  var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) * InvFlt(var(ivar)%nsampbin(ibinx,ibinz)) * var(ivar)%nsamp2
+               end do
+            end if
+         end do
+      end do
+
+      call DistFunc2DSample(iStage, nvar, var)
+      if (lsim .and. master) write(ucnf) var
+
+   case (iAfterSimulation)
+
+      call DistFunc2DSample(iStage, nvar, var)
+      call DistFunc2DHead(nvar, var, uout)
+      call DistFunc2DList(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
+
+      deallocate(var,ipnt)
+
+   end select
+
+   if (ltime) call CpuAdd('stop', txroutine, 1, uout)
+
+
+end subroutine DF_XYZ_Bins
