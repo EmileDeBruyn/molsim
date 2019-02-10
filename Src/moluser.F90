@@ -10911,13 +10911,13 @@ subroutine DF_XYZ_Bins(iStage)
    type(df2d_var), allocatable, save :: var(:)
    integer(4),    allocatable, save :: ipnt(:,:)
    integer(4)                       :: itype, ivar, ip, ipt, ibinx, ibinz
-   real(8),            dimension(2) :: ac
-   real(8)                          :: norm, vsum
    real(8)                          :: InvFlt
-   real(8)                          :: zmin, zmax, xmin, xmax
-   integer(4)                       :: zbins, xbins
+   real(8),            dimension(2) :: ac
+   real(8)                          :: zmin, zmax, xmin, xmax, rmax
+   integer(4)                       :: zbins, xbins, rbins
 
-   namelist /nmlNetworkWallDF/ zmin, zmax, zbins, xmin, xmax, xbins
+   ! namelist /nmlNetworkWallDF/ zmin, zmax, zbins, xmin, xmax, xbins
+   namelist /nmlNetworkWallDF/ zmin, zmax, zbins, rmax, rbins
 
    if (slave) return                   ! only master
 
@@ -10931,25 +10931,23 @@ subroutine DF_XYZ_Bins(iStage)
       zmin  = - boxlen2(3)
       zmax = 0.0d0
       xmin = -boxlen2(1)
-      xmax = +boxlen2(1)
-      xbins = int(boxlen2(1))
+      xmax = boxlen2(1)
+      xbins = int(boxlen2(1)/4)
+      zbins = int(boxlen2(3)/4)
 
       rewind(uin)
       read(uin,nmlNetworkWallDF)
 
       vtype%l =.true.
-      vtype%min(1) = zmin
-      vtype%min(2) = xmin
-      vtype%max(1) = zmax
-      vtype%max(2) = xmax
-      vtype%nbin(1) = zbins
-      vtype%nbin(2) = xbins
+      vtype(1)%min(1:2) = [ xmin, zmin ]
+      vtype(1)%max(1:2) = [ xmax, zmax ]
+      vtype(1)%nbin(1:2) = [ xbins, zbins ]
 
    case (iWriteInput)
 
       ! ... set remaining elements of vtype, label set with ipnt
       nvar = count(jatweakcharge > 0) * 2
-      vtype%nvar = nvar
+      vtype(1)%nvar = nvar
 
       ! ... set nvar and allocate memory
 
@@ -11010,22 +11008,22 @@ subroutine DF_XYZ_Bins(iStage)
          if (laz(ip)) then
             var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) + One
          end if
-         var(ivar)%nsampbin(ibinx,ibinz) = var(ivar)%nsampbin(ibinx,ibinz) + One
+         ! var(ivar)%nsampbin(ibinx,ibinz) = var(ivar)%nsampbin(ibinx,ibinz) + One
       end do
 
    case (iAfterMacrostep)
 
-      do ipt = 1, npt
-         ivar = ipnt(ipt,1)
-         if (.not. ivar > 0) cycle
-         do ibinx = -1, var(ivar)%nbin(1)
-            if (var(ivar)%nsampbin(ibinx,ibinz) > Zero) then
-               do ibinz = -1, var(ivar)%nbin(2)
-                  var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) * InvFlt(var(ivar)%nsampbin(ibinx,ibinz)) * var(ivar)%nsamp2
-               end do
-            end if
-         end do
-      end do
+      ! do ipt = 1, npt
+      !    ivar = ipnt(ipt,1)
+      !    if (.not. ivar > 0) cycle
+      !    do ibinx = -1, var(ivar)%nbin(1)
+      !       if (var(ivar)%nsampbin(ibinx,ibinz) > Zero) then
+      !          do ibinz = -1, var(ivar)%nbin(2)
+      !             var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) * InvFlt(var(ivar)%nsampbin(ibinx,ibinz)) * var(ivar)%nsamp2
+      !          end do
+      !       end if
+      !    end do
+      ! end do
 
       call DistFunc2DSample(iStage, nvar, var)
       if (lsim .and. master) write(ucnf) var
@@ -11034,7 +11032,8 @@ subroutine DF_XYZ_Bins(iStage)
 
       call DistFunc2DSample(iStage, nvar, var)
       call DistFunc2DHead(nvar, var, uout)
-      call DistFunc2DList(txheading, nvar, var, uout, ulist, ishow, iplot, ilist)
+      call DistFunc2DShow(1, txheading, nvar, var, uout)
+      call DistFunc2DList(1, txheading, nvar, var, ulist)
 
       deallocate(var,ipnt)
 
