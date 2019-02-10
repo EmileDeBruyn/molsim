@@ -1141,7 +1141,7 @@ end subroutine DistFunc2DShow
 !************************************************************************
 
 
-subroutine DistFunc2DList(il, txheading, nvar, var, unit)
+subroutine DistFunc2DList(il, txheading, nvar, var, unit, opttxvar)
 
    use StatisticsModule
    implicit none
@@ -1152,11 +1152,16 @@ subroutine DistFunc2DList(il, txheading, nvar, var, unit)
    type(df2d_var), intent(in) :: var(*)             ! 2d distribution functions
    integer(4),     intent(in) :: unit               ! output unit number
    integer(4) ::   i, ibin1, ibin2, m
-   character(5) :: txvar
+   character(10), intent(in), optional :: opttxvar
+   character(10) :: txvar
+
+   if (present(opttxvar)) then
+      txvar = opttxvar
+   else
+      txvar = '  '
+   end if
 
    if(il <= 0) return
-
-   txvar = '  '
 
    write(unit,'(a)') txheading
    write(unit,'(i5)') nvar
