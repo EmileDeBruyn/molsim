@@ -10895,16 +10895,22 @@ subroutine Zbin_XY_Plane_Alpha(iStage)
 
 end subroutine Zbin_XY_Plane_Alpha
 
+!************************************************************************
+!> \page moluser moluser.F90
+!! **DF_XZ_Alpha**
+!! *distribution function in x and z coordinates according to charge state*
+!************************************************************************
 
-subroutine DF_XYZ_Bins(iStage)
+subroutine DF_XZ_Bins(iStage)
 
    use MolModule
    implicit none
 
    integer(4),           intent(in) :: iStage
 
-   character(40),         parameter :: txroutine ='DF_XYZ_Bins'
+   character(40),         parameter :: txroutine ='DF_XZ_Bins'
    character(80),         parameter :: txheading ='Distribution function, binned in 3d cartesian space.'
+   character(10),         parameter :: txvar='number'
    integer(4),            parameter :: ntype = 1
    type(static2D_var),         save :: vtype(ntype)
    integer(4),                 save :: nvar
@@ -11008,22 +11014,22 @@ subroutine DF_XYZ_Bins(iStage)
          if (laz(ip)) then
             var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) + One
          end if
-         ! var(ivar)%nsampbin(ibinx,ibinz) = var(ivar)%nsampbin(ibinx,ibinz) + One
+         var(ivar)%nsampbin(ibinx,ibinz) = var(ivar)%nsampbin(ibinx,ibinz) + One
       end do
 
    case (iAfterMacrostep)
 
-      ! do ipt = 1, npt
-      !    ivar = ipnt(ipt,1)
-      !    if (.not. ivar > 0) cycle
-      !    do ibinx = -1, var(ivar)%nbin(1)
-      !       if (var(ivar)%nsampbin(ibinx,ibinz) > Zero) then
-      !          do ibinz = -1, var(ivar)%nbin(2)
-      !             var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) * InvFlt(var(ivar)%nsampbin(ibinx,ibinz)) * var(ivar)%nsamp2
-      !          end do
-      !       end if
-      !    end do
-      ! end do
+      do ipt = 1, npt
+         ivar = ipnt(ipt,1)
+         if (.not. ivar > 0) cycle
+         do ibinx = -1, var(ivar)%nbin(1)
+            do ibinz = -1, var(ivar)%nbin(2)
+               if (var(ivar)%nsampbin(ibinx,ibinz) > Zero) then
+                  var(ivar)%avs2(ibinx,ibinz) = var(ivar)%avs2(ibinx,ibinz) * InvFlt(var(ivar)%nsampbin(ibinx,ibinz)) * var(ivar)%nsamp2
+               end if
+            end do
+         end do
+      end do
 
       call DistFunc2DSample(iStage, nvar, var)
       if (lsim .and. master) write(ucnf) var
@@ -11033,7 +11039,7 @@ subroutine DF_XYZ_Bins(iStage)
       call DistFunc2DSample(iStage, nvar, var)
       call DistFunc2DHead(nvar, var, uout)
       call DistFunc2DShow(1, txheading, nvar, var, uout)
-      call DistFunc2DList(1, txheading, nvar, var, ulist)
+      call DistFunc2DList(1, txheading, nvar, var, ulist, txvar)
 
       deallocate(var,ipnt)
 
@@ -11041,5 +11047,4 @@ subroutine DF_XYZ_Bins(iStage)
 
    if (ltime) call CpuAdd('stop', txroutine, 1, uout)
 
-
-end subroutine DF_XYZ_Bins
+end subroutine DF_XZ_Bins
