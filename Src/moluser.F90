@@ -2801,7 +2801,7 @@ subroutine StaticUser(iStage)
          call Z_DF_Alpha(iStage) ! Emile de Bruyn charge average distribution in z-direction
          call Zbin_XY_Plane_Alpha(iStage) ! Emile de Bruyn network alpha radial distribution in z-direction
       end if
-      if (txuser == 'emile3') call DF_XYZ_Bins(iStage) ! Emile de Bruyn charge average distribution in xy-plane and z-direction
+      if (txuser == 'emile3') call DF_XZ_Bins(iStage) ! Emile de Bruyn charge average distribution in xy-plane and z-direction
 
    end if
 
