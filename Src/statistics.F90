@@ -999,6 +999,7 @@ subroutine DistFunc2DSample(iStage, nvar, var)
       do i = 1, nvar
          var(i)%nsamp2 = 0
          var(i)%avs2(-1:var(i)%nbin(1),-1:var(i)%nbin(2)) = Zero
+         var(i)%nsampbin(-1:var(i)%nbin(1),-1:var(i)%nbin(2)) = Zero                        ! initiate nsampbin
       end do
 
    case (6)  ! after a macrostep
