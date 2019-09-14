@@ -42,7 +42,8 @@ module StatisticsModule
 
 ! ... data structure for one-dimensional distribution functions
 
-   integer(4), parameter :: mnbin_df =1000
+   ! integer(4), parameter :: mnbin_df = 1000
+   integer(4), parameter :: mnbin_df = 100000
 ! These are documented in the manual in Chapter 7 (file datastructures.md)
    type df_var
       character(27) :: label                             ! label
@@ -62,7 +63,7 @@ module StatisticsModule
 
 ! ... data structure for two-dimensional distribution functions
 
-   integer(4), parameter :: mnbin_df2d = 40
+   integer(4), parameter :: mnbin_df2d = 100
 !   integer(4), parameter :: mnbin_df2d = 100            ! Elliposids (Erik W)
 ! These are documented in the manual in Chapter 7 (file datastructures.md)
    type df2d_var
@@ -75,6 +76,7 @@ module StatisticsModule
       integer(4)    :: nbin(2)                           ! number of grid points
       real(8)       :: bin(2)                            ! grid length of df
       real(8)       :: bini(2)                           ! 1/bini
+      real(8)       :: nsampbin(-1:mnbin_df2d,-1:mnbin_df2d) ! number of values sampled in each bin during macrostep
       real(8)       :: avs1(-1:mnbin_df2d,-1:mnbin_df2d) ! average of the run
       real(8)       :: avsd(-1:mnbin_df2d,-1:mnbin_df2d) ! precision of average of the run
       real(8)       :: avs2(-1:mnbin_df2d,-1:mnbin_df2d) ! average of a macrostep
@@ -997,6 +999,7 @@ subroutine DistFunc2DSample(iStage, nvar, var)
       do i = 1, nvar
          var(i)%nsamp2 = 0
          var(i)%avs2(-1:var(i)%nbin(1),-1:var(i)%nbin(2)) = Zero
+         var(i)%nsampbin(-1:var(i)%nbin(1),-1:var(i)%nbin(2)) = Zero                        ! initiate nsampbin
       end do
 
    case (6)  ! after a macrostep
@@ -1139,7 +1142,7 @@ end subroutine DistFunc2DShow
 !************************************************************************
 
 
-subroutine DistFunc2DList(il, txheading, nvar, var, unit)
+subroutine DistFunc2DList(il, txheading, nvar, var, unit, opttxvar)
 
    use StatisticsModule
    implicit none
@@ -1150,11 +1153,16 @@ subroutine DistFunc2DList(il, txheading, nvar, var, unit)
    type(df2d_var), intent(in) :: var(*)             ! 2d distribution functions
    integer(4),     intent(in) :: unit               ! output unit number
    integer(4) ::   i, ibin1, ibin2, m
-   character(5) :: txvar
+   character(10), intent(in), optional :: opttxvar
+   character(10) :: txvar
+
+   if (present(opttxvar)) then
+      txvar = opttxvar
+   else
+      txvar = '  '
+   end if
 
    if(il <= 0) return
-
-   txvar = '  '
 
    write(unit,'(a)') txheading
    write(unit,'(i5)') nvar
@@ -1181,4 +1189,3 @@ subroutine DistFunc2DList(il, txheading, nvar, var, unit)
    end do
 
 end subroutine DistFunc2DList
-

@@ -45,6 +45,10 @@
 !!  * \subpage radlimit
 !!  * \subpage ntrydef
 !!  * \subpage itestcoordinate
+!!  * \subpage r2dzpos
+!!  * \subpage rnwtxpos
+!!  * \subpage rnwtypos
+!!  * \subpage rnwtzpos
 
 module CoordinateModule
 
@@ -150,7 +154,8 @@ module CoordinateModule
 !! **default:** \ref nnwt*'`random`'
 !! * Selecting center of networks of different types (only \ref txsetconf='network').
 !! * '`origin`': Set one network in the center of the box.
-!! * '`random`':  Generate random positions of the centers of the networks.
+!! * '`random`': Generate random positions of the centers of the networks.
+!! * '`setloc`': Set the specific location of the network origin according to the values of \ref rntxpos, \ref rntypos and \ref rntzpos.
    character(8), allocatable :: txoriginnwt(:)
 !> \page shiftnwt
 !! `real`(3,1:\ref nnwt)
@@ -168,6 +173,26 @@ module CoordinateModule
 !! * `0`: Nothing. The normal option.
 !! * `1`: Write crosslink data.
    integer(4)    :: itestcoordinate           ! =1, call of TestMakeCrossLink
+!> \page r2dzpos
+!! `real`
+!! **default:** `-boxlen2(3) + 2`
+!! * Position of 1d Surface used in \ref cubic2d1surf for particle type ipt.
+   real(8), allocatable      :: r2dzpos(:)		! Position of 1d Surface used in cubic2d1surf
+!> \page rnwtxpos
+!! `real`
+!! **default:** `0`
+!! * x position of network origin when \ref txoriginnwt = 'setloc' for particle type ipt.
+   real(8), allocatable      :: rnwtxpos(:)	 
+!> \page rnwtypos
+!! `real`
+!! **default:** `0`
+!! * y position of network origin when \ref txoriginnwt = 'setloc' for particle type ipt.
+   real(8), allocatable      :: rnwtypos(:)	 
+!> \page rnwtzpos
+!! `real`
+!! **default:** `0`
+!! * z position of network origin when \ref txoriginnwt = 'setloc' for particle type ipt.
+   real(8), allocatable      :: rnwtzpos(:)	    
 end module CoordinateModule
 
 !************************************************************************
@@ -440,11 +465,13 @@ subroutine SetConfiguration
                                   iptnode, ictstrand,                                                &
                                   rnwt, txoriginnwt, shiftnwt,                                       &
                                   radlimit, ntrydef,                                                 &
-                                  itestcoordinate
+                                  itestcoordinate, r2dzpos, 										 &
+								  rnwtxpos, rnwtypos, rnwtzpos
 
    if (.not.allocated(txsetconf)) then
       allocate(txsetconf(npt), nucell(3,npt), rclow(3,npt), rcupp(3, npt),       &
-      roshift(3,npt), radatset(nat), lranori(npt), bondscl(nct), anglemin(nct))
+      roshift(3,npt), radatset(nat), lranori(npt), bondscl(nct), anglemin(nct),  &
+	  r2dzpos(npt), rnwtxpos(npt), rnwtypos(npt), rnwtzpos(npt))
       txsetconf   = ""
       nucell      = 0
       rclow       = 0.0E+00
@@ -454,6 +481,10 @@ subroutine SetConfiguration
       lranori     = .false.
       bondscl     = 0.0E+00
       anglemin    = 0.0E+00
+	  r2dzpos     = 0.0E+00
+	  rnwtxpos(npt) = 0.0E+00
+	  rnwtypos(npt) = 0.0E+00
+	  rnwtzpos(npt) = 0.0E+00
    end if
    if (.not.allocated(radatset)) then
       allocate(radatset(nat))
@@ -2334,6 +2365,10 @@ try:  do itry = 1, ntry    ! loop over attempts to set the gel
 
          if (txoriginnwt(inwt) == 'origin') then
             rorigin(1:3,inwglob) = Zero
+		 else if (txoriginnwt(inwt) == 'setloc') then
+			rorigin(1,inwglob) = rnwtxpos(ipt)
+			rorigin(2,inwglob) = rnwtypos(ipt)
+			rorigin(3,inwglob) = rnwtzpos(ipt)
          else if (txoriginnwt(inwt) == 'random') then
             if (lbcsph) then
                do

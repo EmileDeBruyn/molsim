@@ -13,3 +13,8 @@ Testin/.current.md5sum
 Testin/diff.out
 .nfs*
 Doc/latex
+.idea/
+CMakeLists.txt
+CMakeCache.txt
+CMakeFiles
+cmake-build-debug/
