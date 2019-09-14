@@ -36,8 +36,6 @@ include_directories(Src)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/Src)
 set(EXECUTABLE_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/Bin)
 
-# add_executable(molsim_ser.exe
-# add_library(serial
 set(SERIAL_FILES
     Src/bd.F90
     Src/celllist.F90
@@ -70,7 +68,47 @@ set(SERIAL_FILES
     Src/testmesh.F90
     )
 
+set(PARALLEL_FILES
+        Src/bd.F90
+        Src/celllist.F90
+        Src/coordinate.F90
+        Src/denergy.F90
+        Src/dump.F90
+        Src/dynamic.F90
+        Src/energy.F90
+        Src/gc.f90
+        Src/group.F90
+        Src/image.F90
+        Src/mc.F90
+        Src/md.F90
+        Src/mesh.F90
+        Src/mixed.F90
+        Src/mol.F90
+        Src/molaux.F90
+        Src/mollib.F90
+        Src/molsim.F90
+        Src/molsim.lib
+        Src/molsim_par
+        Src/moluser.F90
+        Src/nlist.F90
+        Src/particle.F90
+        Src/potential.F90
+        Src/sso.F90
+        Src/static.F90
+        Src/statistics.F90
+        Src/testmesh.F90
+        Src/parallel.F90
+        )
+
 add_library(serial ${SERIAL_FILES})
 
+add_library(parallel ${PARALLEL_FILES})
+target_compile_options(parallel PUBLIC -D_PAR_)
+
 add_executable(molsim_ser.exe Src/molsim.F90)
+
+add_executable(molsim_par.exe Src/molsim.F90)
+target_compile_options(molsim_par.exe PUBLIC -D_PAR_)
+
 target_link_libraries(molsim_ser.exe serial fftw3)
+target_link_libraries(molsim_par.exe parallel fftw3)
